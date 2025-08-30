@@ -2,10 +2,10 @@
 すべての文書はaidlc-docsフォルダに保存されます。
 セッション全体を通じて、先に作業を計画し、その計画のためのmdファイルを作成するよう依頼します。
 私が承認した後にのみ作業を進めることができます。
-これらの計画は常にaidlc-docs/plansフォルダに保存されます。
+これらの計画は常に.kiro/aidlc-docs/plansフォルダに保存されます。
 md形式で多くの種類の文書を作成します。
-要件、機能変更文書はaidlc-docs/requirementsフォルダに保存されます。
-ユーザーストーリーはaidlc-docs/story-artifactsフォルダに保存する必要があります。
-アーキテクチャと設計文書はaidlc-docs/design-artifactsフォルダに保存する必要があります。
-すべての指示は順番にaidlc-docs/prompts.mdファイルに保存する必要があります。
+要件、機能変更文書は.kiro/specs/requirementsフォルダに保存されます。
+ユーザーストーリーは.kiro/aidlc-docs/story-artifactsフォルダに保存する必要があります。
+アーキテクチャと設計文書は.kiro/aidlc-docs/design-artifactsフォルダに保存する必要があります。
+すべての指示は順番に.kiro/aidlc-docs/prompts.mdファイルに保存する必要があります。
 この指示の理解を確認してください。必要なフォルダとファイルがまだ存在しない場合は、保存用に作成してください。
