@@ -1,0 +1,27 @@
+カード・戦略管理ユニット コンポーネントモデル設計完了
+
+完了日時: 2025-08-30
+設計者: AI Assistant
+
+成果物:
+- component_model.md: 完全なコンポーネントモデル文書
+
+主要コンポーネント:
+- 5つのドメインエンティティ (Card, Hand, CardPool, CardLibrary, GameSession)
+- 3つの値オブジェクト (CardCost, TowerType, SpecialAbility)
+- 3つのドメインサービス (CardSelection, CardPlayValidation, CardDiscovery)
+- 3つの外部インターフェース (TowerPlacement, UIFeedback, GameSession)
+
+実装仕様:
+- TypeScript + Bun技術スタック対応
+- DDD原則に基づく設計
+- カードステータス: 体力(50-500), 攻撃力(10-200), 攻撃範囲(10-1000000px)
+- JSON設定ファイルによるデータ管理
+- ローカルストレージによる永続化
+
+ユーザーストーリー対応:
+✓ ストーリー2.1: ランダムカード配布
+✓ ストーリー2.2: 戦略的カードプレイ  
+✓ ストーリー2.3: 多様なカードタイプの発見
+
+次のステップ: 実装フェーズへの移行準備完了
