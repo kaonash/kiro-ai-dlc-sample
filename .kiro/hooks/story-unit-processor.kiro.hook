@@ -4,7 +4,7 @@
   "description": "Automatically processes completed user stories and creates development units when .kiro/specs/story-artifacts/completed.txt is created",
   "version": "1",
   "when": {
-    "type": "fileEdited",
+    "type": "fileCreated",
     "patterns": [
       ".kiro/specs/story-artifacts/completed.txt"
     ]
