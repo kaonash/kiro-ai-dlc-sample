@@ -4,7 +4,7 @@
   "description": "Monitors for completed.txt files in design artifacts directories and triggers implementation planning and execution workflow",
   "version": "1",
   "when": {
-    "type": "fileEdited",
+    "type": "fileCreated",
     "patterns": [
       ".kiro/specs/design-artifacts/**/completed.txt"
     ]

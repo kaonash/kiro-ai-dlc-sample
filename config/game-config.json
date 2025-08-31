@@ -1,0 +1,69 @@
+{
+  "game": {
+    "name": "タワーディフェンス カードゲーム",
+    "version": "1.0.0",
+    "maxPlayTime": 180,
+    "description": "2Dタワーディフェンスゲームのカード・戦略管理システム"
+  },
+  "hand": {
+    "maxSize": 8,
+    "initialSize": 8
+  },
+  "cardPool": {
+    "minSize": 30,
+    "totalCards": 32
+  },
+  "costs": {
+    "min": 1,
+    "max": 10,
+    "lowThreshold": 3,
+    "highThreshold": 7
+  },
+  "balance": {
+    "lowCostRatio": 0.3,
+    "mediumCostRatio": 0.5,
+    "highCostRatio": 0.2,
+    "idealAverageCost": 5.0,
+    "idealCostSpread": 2.5
+  },
+  "towerTypes": [
+    "ARCHER",
+    "CANNON",
+    "MAGIC",
+    "ICE",
+    "FIRE",
+    "LIGHTNING",
+    "POISON",
+    "SUPPORT"
+  ],
+  "specialAbilities": [
+    "NONE",
+    "SPLASH_DAMAGE",
+    "SLOW_EFFECT",
+    "POISON_EFFECT",
+    "CHAIN_LIGHTNING",
+    "ARMOR_PIERCE",
+    "RANGE_BOOST",
+    "DAMAGE_BOOST",
+    "FREEZE",
+    "BURN",
+    "STUN",
+    "MULTI_SHOT"
+  ],
+  "storage": {
+    "cardLibraryKey": "card-library",
+    "autoSave": true,
+    "compressionEnabled": false
+  },
+  "ui": {
+    "animationDuration": 300,
+    "cardDisplayDelay": 100,
+    "feedbackDuration": 2000
+  },
+  "debug": {
+    "enabled": false,
+    "logLevel": "info",
+    "showCardIds": false,
+    "mockData": false
+  }
+}
