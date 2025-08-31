@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Design Completion Implementation Trigger",
+  "description": "Monitors for completed.txt files in design artifacts directories and triggers implementation planning and execution workflow",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/design-artifacts/**/completed.txt"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "あなたの役割：あなたは経験豊富なソフトウェアエンジニアです。処理のトリガーとなったcompleted.txtが存在しているディレクトリ内のcomponent_model.mdと.kiro/specs/units/{ディレクトリ名}/units.mdを参照し、実装計画を立て、実装を行います。\n\n実装を開始する前に、計画を立て、計画の各ステップに対してチェックボックスを付けた.kiro/plans/coding/{ディレクトリ名}/coding_plan.mdファイルにステップを書き込んでください。ステップに私の明確化が必要な場合は、私と対話して確認を得るためにステップに追加してください。重要な決定を自分で行わないでください。計画を作成したら、私のレビューと承認を求めてください。私の承認後、同じ計画を一度に1ステップずつ実行することができます。各ステップを完了したら、計画のチェックボックスを完了としてマークしてください。\n\nあなたのタスク：コンポーネントモデルとユニットの計画を元に実装を行います。\n実装にあたっては、steering/tech.mdに記載された技術要件に則って進めてください。\nまずはテストから実装し、続けて実コードの実装に入ってください。\n実装完了後、テストの実行も行い、テストがすべて通るまで修正を続けてください。\nテストがすべて完了したら、変更内容を私に知らせて承認を得てください。\n私からの承認を得たらあなたの作業は終了です。"
+  }
+}
