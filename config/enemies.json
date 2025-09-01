@@ -1,0 +1,54 @@
+{
+  "enemyTypes": {
+    "BASIC": {
+      "displayName": "基本敵",
+      "description": "バランスの取れた標準的な敵",
+      "baseStats": {
+        "health": 100,
+        "attackPower": 50,
+        "movementSpeed": 100
+      },
+      "imageUrl": "/images/enemies/basic.png"
+    },
+    "RANGED": {
+      "displayName": "遠距離攻撃敵",
+      "description": "体力は低いが遠距離攻撃が可能",
+      "baseStats": {
+        "health": 70,
+        "attackPower": 50,
+        "movementSpeed": 100
+      },
+      "imageUrl": "/images/enemies/ranged.png"
+    },
+    "FAST": {
+      "displayName": "高速敵",
+      "description": "素早く移動するが体力と攻撃力が低い",
+      "baseStats": {
+        "health": 60,
+        "attackPower": 30,
+        "movementSpeed": 150
+      },
+      "imageUrl": "/images/enemies/fast.png"
+    },
+    "ENHANCED": {
+      "displayName": "強化敵",
+      "description": "基本敵より強化されたバージョン",
+      "baseStats": {
+        "health": 150,
+        "attackPower": 70,
+        "movementSpeed": 90
+      },
+      "imageUrl": "/images/enemies/enhanced.png"
+    },
+    "BOSS": {
+      "displayName": "ボス敵",
+      "description": "最強の体力と攻撃力を持つが移動が遅い",
+      "baseStats": {
+        "health": 300,
+        "attackPower": 100,
+        "movementSpeed": 60
+      },
+      "imageUrl": "/images/enemies/boss.png"
+    }
+  }
+}

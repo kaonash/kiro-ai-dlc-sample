@@ -1,0 +1,32 @@
+{
+  "waveConfiguration": {
+    "baseEnemyCount": 10,
+    "enemyCountIncrement": 10,
+    "waveInterval": 30000,
+    "spawnInterval": 1000,
+    "enemyTypeDistribution": {
+      "1-5": {
+        "BASIC": 0.8,
+        "FAST": 0.2
+      },
+      "6-10": {
+        "BASIC": 0.6,
+        "RANGED": 0.2,
+        "FAST": 0.2
+      },
+      "11-15": {
+        "BASIC": 0.4,
+        "RANGED": 0.3,
+        "FAST": 0.2,
+        "ENHANCED": 0.1
+      },
+      "16+": {
+        "BASIC": 0.3,
+        "RANGED": 0.2,
+        "FAST": 0.2,
+        "ENHANCED": 0.2,
+        "BOSS": 0.1
+      }
+    }
+  }
+}

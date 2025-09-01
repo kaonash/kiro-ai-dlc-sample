@@ -1,0 +1,49 @@
+{
+  "movementPaths": [
+    {
+      "id": "path_1",
+      "name": "北側パス",
+      "description": "画面上部を通る標準的なルート",
+      "difficulty": "MEDIUM",
+      "spawnPoint": { "x": 0, "y": 200 },
+      "basePoint": { "x": 800, "y": 400 },
+      "pathPoints": [
+        { "x": 0, "y": 200 },
+        { "x": 200, "y": 150 },
+        { "x": 400, "y": 200 },
+        { "x": 600, "y": 300 },
+        { "x": 800, "y": 400 }
+      ]
+    },
+    {
+      "id": "path_2",
+      "name": "南側パス",
+      "description": "画面下部を通る迂回ルート",
+      "difficulty": "EASY",
+      "spawnPoint": { "x": 0, "y": 600 },
+      "basePoint": { "x": 800, "y": 400 },
+      "pathPoints": [
+        { "x": 0, "y": 600 },
+        { "x": 200, "y": 650 },
+        { "x": 400, "y": 600 },
+        { "x": 600, "y": 500 },
+        { "x": 800, "y": 400 }
+      ]
+    },
+    {
+      "id": "path_3",
+      "name": "中央パス",
+      "description": "画面中央を直進する最短ルート",
+      "difficulty": "HARD",
+      "spawnPoint": { "x": 0, "y": 400 },
+      "basePoint": { "x": 800, "y": 400 },
+      "pathPoints": [
+        { "x": 0, "y": 400 },
+        { "x": 200, "y": 380 },
+        { "x": 400, "y": 420 },
+        { "x": 600, "y": 380 },
+        { "x": 800, "y": 400 }
+      ]
+    }
+  ]
+}
