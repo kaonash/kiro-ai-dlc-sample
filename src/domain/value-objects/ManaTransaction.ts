@@ -9,11 +9,11 @@ export class ManaTransaction {
     if (amount < 0) {
       throw new Error("取引量は0以上である必要があります");
     }
-    
+
     if (!["generation", "consumption"].includes(type)) {
       throw new Error("無効な取引タイプです");
     }
-    
+
     if (timestamp <= 0) {
       throw new Error("タイムスタンプは正の値である必要があります");
     }
@@ -45,9 +45,7 @@ export class ManaTransaction {
 
   equals(other: ManaTransaction): boolean {
     return (
-      this.amount === other.amount &&
-      this.type === other.type &&
-      this.timestamp === other.timestamp
+      this.amount === other.amount && this.type === other.type && this.timestamp === other.timestamp
     );
   }
 

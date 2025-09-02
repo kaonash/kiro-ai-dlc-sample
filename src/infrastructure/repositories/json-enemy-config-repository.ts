@@ -1,5 +1,5 @@
-import { EnemyType } from '../../domain/value-objects/enemy-type';
-import { WaveConfiguration } from '../../domain/value-objects/wave-configuration';
+import { EnemyType } from "../../domain/value-objects/enemy-type";
+import { WaveConfiguration } from "../../domain/value-objects/wave-configuration";
 
 /**
  * 敵設定データの型定義
@@ -38,7 +38,7 @@ export class JsonEnemyConfigRepository {
   private waveConfiguration: WaveConfiguration | null = null;
   private gameSettings: GameSettings | null = null;
   private balanceSettings: BalanceSettings | null = null;
-  private isLoaded: boolean = false;
+  private isLoaded = false;
 
   constructor() {
     this.initializeDefaultConfigs();
@@ -50,58 +50,58 @@ export class JsonEnemyConfigRepository {
   private initializeDefaultConfigs(): void {
     // 敵タイプ設定
     this.enemyConfigs.set(EnemyType.BASIC, {
-      displayName: '基本敵',
-      description: 'バランスの取れた標準的な敵',
+      displayName: "基本敵",
+      description: "バランスの取れた標準的な敵",
       baseStats: {
         health: 100,
         attackPower: 50,
-        movementSpeed: 100
+        movementSpeed: 100,
       },
-      imageUrl: '/images/enemies/basic.png'
+      imageUrl: "/images/enemies/basic.png",
     });
 
     this.enemyConfigs.set(EnemyType.RANGED, {
-      displayName: '遠距離攻撃敵',
-      description: '体力は低いが遠距離攻撃が可能',
+      displayName: "遠距離攻撃敵",
+      description: "体力は低いが遠距離攻撃が可能",
       baseStats: {
         health: 70,
         attackPower: 50,
-        movementSpeed: 100
+        movementSpeed: 100,
       },
-      imageUrl: '/images/enemies/ranged.png'
+      imageUrl: "/images/enemies/ranged.png",
     });
 
     this.enemyConfigs.set(EnemyType.FAST, {
-      displayName: '高速敵',
-      description: '素早く移動するが体力と攻撃力が低い',
+      displayName: "高速敵",
+      description: "素早く移動するが体力と攻撃力が低い",
       baseStats: {
         health: 60,
         attackPower: 30,
-        movementSpeed: 150
+        movementSpeed: 150,
       },
-      imageUrl: '/images/enemies/fast.png'
+      imageUrl: "/images/enemies/fast.png",
     });
 
     this.enemyConfigs.set(EnemyType.ENHANCED, {
-      displayName: '強化敵',
-      description: '基本敵より強化されたバージョン',
+      displayName: "強化敵",
+      description: "基本敵より強化されたバージョン",
       baseStats: {
         health: 150,
         attackPower: 70,
-        movementSpeed: 90
+        movementSpeed: 90,
       },
-      imageUrl: '/images/enemies/enhanced.png'
+      imageUrl: "/images/enemies/enhanced.png",
     });
 
     this.enemyConfigs.set(EnemyType.BOSS, {
-      displayName: 'ボス敵',
-      description: '最強の体力と攻撃力を持つが移動が遅い',
+      displayName: "ボス敵",
+      description: "最強の体力と攻撃力を持つが移動が遅い",
       baseStats: {
         health: 300,
         attackPower: 100,
-        movementSpeed: 60
+        movementSpeed: 60,
       },
-      imageUrl: '/images/enemies/boss.png'
+      imageUrl: "/images/enemies/boss.png",
     });
 
     // 波設定
@@ -113,7 +113,7 @@ export class JsonEnemyConfigRepository {
       averageTowerAttackPower: 50,
       pathTravelTime: 10000,
       waveInterval: 30000,
-      enemySpawnInterval: 1000
+      enemySpawnInterval: 1000,
     };
 
     // バランス設定
@@ -121,7 +121,7 @@ export class JsonEnemyConfigRepository {
       enemyHealthMultiplier: 1.0,
       enemyAttackMultiplier: 1.0,
       enemySpeedMultiplier: 1.0,
-      waveScalingFactor: 1.0
+      waveScalingFactor: 1.0,
     };
 
     this.isLoaded = true;
@@ -134,12 +134,12 @@ export class JsonEnemyConfigRepository {
    */
   async getEnemyTypeConfig(enemyType: EnemyType): Promise<EnemyTypeConfig> {
     await this.ensureLoaded();
-    
+
     const config = this.enemyConfigs.get(enemyType);
     if (!config) {
       throw new Error(`Enemy type config not found: ${enemyType.toString()}`);
     }
-    
+
     return { ...config };
   }
 
@@ -149,12 +149,12 @@ export class JsonEnemyConfigRepository {
    */
   async getAllEnemyTypeConfigs(): Promise<Map<EnemyType, EnemyTypeConfig>> {
     await this.ensureLoaded();
-    
+
     const configs = new Map<EnemyType, EnemyTypeConfig>();
     for (const [enemyType, config] of this.enemyConfigs.entries()) {
       configs.set(enemyType, { ...config });
     }
-    
+
     return configs;
   }
 
@@ -164,11 +164,11 @@ export class JsonEnemyConfigRepository {
    */
   async getWaveConfiguration(): Promise<WaveConfiguration> {
     await this.ensureLoaded();
-    
+
     if (!this.waveConfiguration) {
-      throw new Error('Wave configuration not loaded');
+      throw new Error("Wave configuration not loaded");
     }
-    
+
     return this.waveConfiguration;
   }
 
@@ -178,11 +178,11 @@ export class JsonEnemyConfigRepository {
    */
   async getGameSettings(): Promise<GameSettings> {
     await this.ensureLoaded();
-    
+
     if (!this.gameSettings) {
-      throw new Error('Game settings not loaded');
+      throw new Error("Game settings not loaded");
     }
-    
+
     return { ...this.gameSettings };
   }
 
@@ -192,11 +192,11 @@ export class JsonEnemyConfigRepository {
    */
   async getBalanceSettings(): Promise<BalanceSettings> {
     await this.ensureLoaded();
-    
+
     if (!this.balanceSettings) {
-      throw new Error('Balance settings not loaded');
+      throw new Error("Balance settings not loaded");
     }
-    
+
     return { ...this.balanceSettings };
   }
 
@@ -206,14 +206,14 @@ export class JsonEnemyConfigRepository {
    */
   async updateBalanceSettings(settings: Partial<BalanceSettings>): Promise<void> {
     await this.ensureLoaded();
-    
+
     if (!this.balanceSettings) {
-      throw new Error('Balance settings not loaded');
+      throw new Error("Balance settings not loaded");
     }
-    
+
     this.balanceSettings = {
       ...this.balanceSettings,
-      ...settings
+      ...settings,
     };
   }
 
@@ -224,11 +224,11 @@ export class JsonEnemyConfigRepository {
    */
   async getEnemyTypeDistribution(waveNumber: number): Promise<Map<EnemyType, number>> {
     await this.ensureLoaded();
-    
+
     if (!this.waveConfiguration) {
-      throw new Error('Wave configuration not loaded');
+      throw new Error("Wave configuration not loaded");
     }
-    
+
     return this.waveConfiguration.getEnemyTypeDistribution(waveNumber);
   }
 
@@ -255,7 +255,7 @@ export class JsonEnemyConfigRepository {
    */
   async saveToFiles(): Promise<void> {
     // 将来的にはJSONファイルに保存する実装を追加
-    console.log('Settings saved (placeholder implementation)');
+    console.log("Settings saved (placeholder implementation)");
   }
 
   /**
@@ -265,7 +265,7 @@ export class JsonEnemyConfigRepository {
   async isConfigurationValid(): Promise<boolean> {
     try {
       await this.ensureLoaded();
-      
+
       // 敵タイプ設定の検証
       for (const [enemyType, config] of this.enemyConfigs.entries()) {
         if (!config.displayName || !config.description) {
@@ -278,22 +278,22 @@ export class JsonEnemyConfigRepository {
           return false;
         }
       }
-      
+
       // 波設定の検証
       if (!this.waveConfiguration) {
         return false;
       }
-      
+
       // ゲーム設定の検証
       if (!this.gameSettings || this.gameSettings.playerBaseHealth <= 0) {
         return false;
       }
-      
+
       // バランス設定の検証
       if (!this.balanceSettings) {
         return false;
       }
-      
+
       return true;
     } catch (error) {
       return false;
@@ -313,21 +313,24 @@ export class JsonEnemyConfigRepository {
    * @param enemyType 敵タイプ
    * @param config 新しい設定
    */
-  async updateEnemyTypeConfig(enemyType: EnemyType, config: Partial<EnemyTypeConfig>): Promise<void> {
+  async updateEnemyTypeConfig(
+    enemyType: EnemyType,
+    config: Partial<EnemyTypeConfig>
+  ): Promise<void> {
     await this.ensureLoaded();
-    
+
     const currentConfig = this.enemyConfigs.get(enemyType);
     if (!currentConfig) {
       throw new Error(`Enemy type config not found: ${enemyType.toString()}`);
     }
-    
+
     this.enemyConfigs.set(enemyType, {
       ...currentConfig,
       ...config,
       baseStats: {
         ...currentConfig.baseStats,
-        ...(config.baseStats || {})
-      }
+        ...(config.baseStats || {}),
+      },
     });
   }
 
@@ -337,14 +340,14 @@ export class JsonEnemyConfigRepository {
    */
   async updateGameSettings(settings: Partial<GameSettings>): Promise<void> {
     await this.ensureLoaded();
-    
+
     if (!this.gameSettings) {
-      throw new Error('Game settings not loaded');
+      throw new Error("Game settings not loaded");
     }
-    
+
     this.gameSettings = {
       ...this.gameSettings,
-      ...settings
+      ...settings,
     };
   }
 
@@ -359,12 +362,12 @@ export class JsonEnemyConfigRepository {
     balanceSettings: BalanceSettings | null;
   }> {
     await this.ensureLoaded();
-    
+
     return {
       enemyConfigs: new Map(this.enemyConfigs),
       waveConfiguration: this.waveConfiguration,
       gameSettings: this.gameSettings ? { ...this.gameSettings } : null,
-      balanceSettings: this.balanceSettings ? { ...this.balanceSettings } : null
+      balanceSettings: this.balanceSettings ? { ...this.balanceSettings } : null,
     };
   }
 

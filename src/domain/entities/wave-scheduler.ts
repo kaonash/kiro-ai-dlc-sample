@@ -1,18 +1,18 @@
-import { EnemyWave } from './enemy-wave';
-import { Enemy } from './enemy';
-import { WaveConfiguration } from '../value-objects/wave-configuration';
-import { MovementPath } from '../value-objects/movement-path';
+import type { MovementPath } from "../value-objects/movement-path";
+import type { WaveConfiguration } from "../value-objects/wave-configuration";
+import type { Enemy } from "./enemy";
+import { EnemyWave } from "./enemy-wave";
 
 /**
  * 敵の波全体を統括管理する集約ルート
  */
 export class WaveScheduler {
   public readonly waveInterval: number;
-  
+
   private _currentWave: EnemyWave | null = null;
-  private _waveNumber: number = 0;
+  private _waveNumber = 0;
   private _nextWaveTime: Date;
-  private _isActive: boolean = false;
+  private _isActive = false;
 
   constructor(
     private readonly waveConfiguration: WaveConfiguration,
@@ -68,7 +68,7 @@ export class WaveScheduler {
       if (this._currentWave.canSpawnEnemy()) {
         this._currentWave.spawnNextEnemy(movementPath);
       }
-      
+
       // 死亡した敵を除去
       this._currentWave.removeDeadEnemies();
     }
@@ -144,7 +144,7 @@ export class WaveScheduler {
       return null;
     }
 
-    return this._currentWave.enemies.find(enemy => enemy.id === enemyId) || null;
+    return this._currentWave.enemies.find((enemy) => enemy.id === enemyId) || null;
   }
 
   /**
@@ -173,8 +173,8 @@ export class WaveScheduler {
     }
 
     let totalDamage = 0;
-    const enemiesAtBase = this._currentWave.enemies.filter(enemy => 
-      enemy.isAlive && enemy.isAtBase()
+    const enemiesAtBase = this._currentWave.enemies.filter(
+      (enemy) => enemy.isAlive && enemy.isAtBase()
     );
 
     for (const enemy of enemiesAtBase) {
@@ -210,19 +210,19 @@ export class WaveScheduler {
     };
   } {
     const activeEnemies = this.getAllActiveEnemies();
-    
+
     const stats = {
       isActive: this._isActive,
       currentWaveNumber: this._waveNumber,
       totalActiveEnemies: activeEnemies.length,
       nextWaveTime: this._nextWaveTime,
-      gameStartTime: this.gameStartTime
+      gameStartTime: this.gameStartTime,
     };
 
     if (this._currentWave) {
       return {
         ...stats,
-        currentWaveStats: this._currentWave.getWaveStats()
+        currentWaveStats: this._currentWave.getWaveStats(),
       };
     }
 
@@ -235,7 +235,7 @@ export class WaveScheduler {
   forceCompleteCurrentWave(): void {
     if (this._currentWave) {
       // すべての敵を破壊
-      this._currentWave.enemies.forEach(enemy => enemy.destroy());
+      this._currentWave.enemies.forEach((enemy) => enemy.destroy());
       this._currentWave.removeDeadEnemies();
     }
   }
@@ -248,5 +248,13 @@ export class WaveScheduler {
     this._waveNumber = 0;
     this._nextWaveTime = new Date(this.gameStartTime.getTime() + this.waveInterval);
     this._isActive = false;
+  }
+
+  /**
+   * 次の波時間を強制設定する（テスト用）
+   * @param time 設定する時間
+   */
+  setNextWaveTime(time: Date): void {
+    this._nextWaveTime = time;
   }
 }

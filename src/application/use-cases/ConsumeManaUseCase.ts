@@ -1,4 +1,4 @@
-import { ManaPool } from "../../domain/entities/ManaPool";
+import type { ManaPool } from "../../domain/entities/ManaPool";
 import { ManaConsumptionService } from "../../domain/services/ManaConsumptionService";
 import { ManaValidationService } from "../../domain/services/ManaValidationService";
 
@@ -59,7 +59,7 @@ export class ConsumeManaUseCase {
       if (!validationResult.isValid) {
         return {
           isSuccess: false,
-          error: validationResult.errors.join(", ")
+          error: validationResult.errors.join(", "),
         };
       }
 
@@ -71,7 +71,7 @@ export class ConsumeManaUseCase {
         if (!costValidation.isValid) {
           return {
             isSuccess: false,
-            error: `カードコストが無効です: ${costValidation.errors.join(", ")}`
+            error: `カードコストが無効です: ${costValidation.errors.join(", ")}`,
           };
         }
       }
@@ -83,7 +83,7 @@ export class ConsumeManaUseCase {
           isSuccess: false,
           error: "魔力が不足しています",
           shortage: consumptionCheck.shortage,
-          userMessage: `魔力が${consumptionCheck.shortage}ポイント不足しています`
+          userMessage: `魔力が${consumptionCheck.shortage}ポイント不足しています`,
         };
       }
 
@@ -98,7 +98,7 @@ export class ConsumeManaUseCase {
       if (!consumptionResult.isSuccess) {
         return {
           isSuccess: false,
-          error: consumptionResult.error
+          error: consumptionResult.error,
         };
       }
 
@@ -106,23 +106,25 @@ export class ConsumeManaUseCase {
         isSuccess: true,
         consumedAmount: consumptionResult.consumedAmount,
         remainingMana: consumptionResult.remainingMana,
-        cardId
+        cardId,
       };
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力消費中に予期しないエラーが発生しました"
+        error:
+          error instanceof Error ? error.message : "魔力消費中に予期しないエラーが発生しました",
       };
     }
   }
 
-  async simulateMultipleConsumption(request: MultipleConsumptionRequest): Promise<MultipleConsumptionResponse> {
+  async simulateMultipleConsumption(
+    request: MultipleConsumptionRequest
+  ): Promise<MultipleConsumptionResponse> {
     try {
       if (!request.manaPool) {
         return {
           isSuccess: false,
-          error: "魔力プールが無効です"
+          error: "魔力プールが無効です",
         };
       }
 
@@ -133,28 +135,30 @@ export class ConsumeManaUseCase {
 
       return {
         isSuccess: true,
-        ...result
+        ...result,
       };
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "複数消費シミュレーション中にエラーが発生しました"
+        error:
+          error instanceof Error
+            ? error.message
+            : "複数消費シミュレーション中にエラーが発生しました",
       };
     }
   }
 
   async getCardAvailability(request: CardAvailabilityRequest): Promise<CardAvailabilityResponse> {
-    const availableCards = request.cardCosts.map(cost => ({
+    const availableCards = request.cardCosts.map((cost) => ({
       cost,
-      available: request.manaPool.canConsume(cost)
+      available: request.manaPool.canConsume(cost),
     }));
 
-    const greyedOutCards = request.cardCosts.filter(cost => !request.manaPool.canConsume(cost));
+    const greyedOutCards = request.cardCosts.filter((cost) => !request.manaPool.canConsume(cost));
 
     return {
       availableCards,
-      greyedOutCards
+      greyedOutCards,
     };
   }
 
@@ -179,7 +183,7 @@ export class ConsumeManaUseCase {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }

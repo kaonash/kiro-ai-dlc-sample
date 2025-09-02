@@ -32,7 +32,7 @@ export class ManaGeneratedEvent extends DomainEvent {
     timestamp: number
   ) {
     super("ManaGenerated", timestamp);
-    
+
     if (generatedAmount < 0) {
       throw new Error("生成量は0以上である必要があります");
     }
@@ -63,7 +63,7 @@ export class ManaGeneratedEvent extends DomainEvent {
     if (!(other instanceof ManaGeneratedEvent)) {
       return false;
     }
-    
+
     return (
       this.poolId === other.poolId &&
       this.generatedAmount === other.generatedAmount &&
@@ -88,7 +88,7 @@ export class ManaConsumedEvent extends DomainEvent {
     timestamp: number
   ) {
     super("ManaConsumed", timestamp);
-    
+
     if (consumedAmount < 0) {
       throw new Error("消費量は0以上である必要があります");
     }
@@ -119,7 +119,7 @@ export class ManaConsumedEvent extends DomainEvent {
     if (!(other instanceof ManaConsumedEvent)) {
       return false;
     }
-    
+
     return (
       this.poolId === other.poolId &&
       this.consumedAmount === other.consumedAmount &&
@@ -136,7 +136,7 @@ export class ManaCapReachedEvent extends DomainEvent {
 
   constructor(poolId: string, maxMana: number, timestamp: number) {
     super("ManaCapReached", timestamp);
-    
+
     if (maxMana < 1) {
       throw new Error("最大魔力は1以上である必要があります");
     }
@@ -157,7 +157,7 @@ export class ManaCapReachedEvent extends DomainEvent {
     if (!(other instanceof ManaCapReachedEvent)) {
       return false;
     }
-    
+
     return (
       this.poolId === other.poolId &&
       this.maxMana === other.maxMana &&

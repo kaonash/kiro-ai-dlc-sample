@@ -1,10 +1,10 @@
-import { MovementPath } from '../../domain/value-objects/movement-path';
-import { Position } from '../../domain/value-objects/position';
+import { MovementPath } from "../../domain/value-objects/movement-path";
+import { Position } from "../../domain/value-objects/position";
 
 /**
  * パス難易度の型定義
  */
-export type PathDifficulty = 'EASY' | 'MEDIUM' | 'HARD';
+export type PathDifficulty = "EASY" | "MEDIUM" | "HARD";
 
 /**
  * パス設定データの型定義
@@ -24,7 +24,7 @@ export interface PathConfig {
 export class JsonPathConfigRepository {
   private pathConfigs: Map<string, PathConfig> = new Map();
   private movementPaths: Map<string, MovementPath> = new Map();
-  private isLoaded: boolean = false;
+  private isLoaded = false;
 
   constructor() {
     this.initializeDefaultPaths();
@@ -36,47 +36,47 @@ export class JsonPathConfigRepository {
   private initializeDefaultPaths(): void {
     const defaultPaths: PathConfig[] = [
       {
-        id: 'path_1',
-        name: '北側パス',
-        description: '画面上部を通る標準的なルート',
-        difficulty: 'MEDIUM',
+        id: "path_1",
+        name: "北側パス",
+        description: "画面上部を通る標準的なルート",
+        difficulty: "MEDIUM",
         pathPoints: [
           new Position(0, 200),
           new Position(200, 150),
           new Position(400, 200),
           new Position(600, 300),
-          new Position(800, 400)
+          new Position(800, 400),
         ],
-        isDefault: true
+        isDefault: true,
       },
       {
-        id: 'path_2',
-        name: '南側パス',
-        description: '画面下部を通る迂回ルート',
-        difficulty: 'EASY',
+        id: "path_2",
+        name: "南側パス",
+        description: "画面下部を通る迂回ルート",
+        difficulty: "EASY",
         pathPoints: [
           new Position(0, 600),
           new Position(200, 650),
           new Position(400, 600),
           new Position(600, 500),
-          new Position(800, 400)
+          new Position(800, 400),
         ],
-        isDefault: true
+        isDefault: true,
       },
       {
-        id: 'path_3',
-        name: '中央パス',
-        description: '画面中央を直進する最短ルート',
-        difficulty: 'HARD',
+        id: "path_3",
+        name: "中央パス",
+        description: "画面中央を直進する最短ルート",
+        difficulty: "HARD",
         pathPoints: [
           new Position(0, 400),
           new Position(200, 380),
           new Position(400, 420),
           new Position(600, 380),
-          new Position(800, 400)
+          new Position(800, 400),
         ],
-        isDefault: true
-      }
+        isDefault: true,
+      },
     ];
 
     for (const pathConfig of defaultPaths) {
@@ -125,7 +125,7 @@ export class JsonPathConfigRepository {
   async getPathsByDifficulty(difficulty: PathDifficulty): Promise<MovementPath[]> {
     await this.ensureLoaded();
     const matchingPaths: MovementPath[] = [];
-    
+
     for (const [pathId, pathConfig] of this.pathConfigs.entries()) {
       if (pathConfig.difficulty === difficulty) {
         const movementPath = this.movementPaths.get(pathId);
@@ -134,7 +134,7 @@ export class JsonPathConfigRepository {
         }
       }
     }
-    
+
     return matchingPaths;
   }
 
@@ -145,11 +145,11 @@ export class JsonPathConfigRepository {
   async getSpawnPoints(): Promise<Position[]> {
     await this.ensureLoaded();
     const spawnPoints: Position[] = [];
-    
+
     for (const path of this.movementPaths.values()) {
       spawnPoints.push(path.spawnPoint);
     }
-    
+
     return spawnPoints;
   }
 
@@ -161,7 +161,7 @@ export class JsonPathConfigRepository {
     await this.ensureLoaded();
     const basePoints: Position[] = [];
     const uniqueBasePoints = new Set<string>();
-    
+
     for (const path of this.movementPaths.values()) {
       const key = `${path.basePoint.x},${path.basePoint.y}`;
       if (!uniqueBasePoints.has(key)) {
@@ -169,7 +169,7 @@ export class JsonPathConfigRepository {
         basePoints.push(path.basePoint);
       }
     }
-    
+
     return basePoints;
   }
 
@@ -184,17 +184,17 @@ export class JsonPathConfigRepository {
       if (path.pathPoints.length < 2) {
         return false;
       }
-      
+
       // パス長チェック
       if (path.totalLength <= 0) {
         return false;
       }
-      
+
       // 生成地点と基地地点の一致チェック
       if (path.spawnPoint.equals(path.basePoint)) {
         return false;
       }
-      
+
       return true;
     } catch (error) {
       return false;
@@ -213,27 +213,27 @@ export class JsonPathConfigRepository {
     difficultyDistribution: Map<PathDifficulty, number>;
   }> {
     await this.ensureLoaded();
-    
+
     const paths = Array.from(this.movementPaths.values());
-    const lengths = paths.map(path => path.totalLength);
-    
+    const lengths = paths.map((path) => path.totalLength);
+
     const totalLength = lengths.reduce((sum, length) => sum + length, 0);
     const averageLength = paths.length > 0 ? totalLength / paths.length : 0;
     const shortestPath = Math.min(...lengths);
     const longestPath = Math.max(...lengths);
-    
+
     const difficultyDistribution = new Map<PathDifficulty, number>();
     for (const pathConfig of this.pathConfigs.values()) {
       const current = difficultyDistribution.get(pathConfig.difficulty) || 0;
       difficultyDistribution.set(pathConfig.difficulty, current + 1);
     }
-    
+
     return {
       totalPaths: paths.length,
       averageLength: Math.round(averageLength * 100) / 100,
       shortestPath,
       longestPath,
-      difficultyDistribution
+      difficultyDistribution,
     };
   }
 
@@ -246,31 +246,31 @@ export class JsonPathConfigRepository {
    * @returns 追加されたパスID
    */
   async addCustomPath(
-    pathId: string, 
-    name: string, 
-    pathPoints: Position[], 
-    difficulty: PathDifficulty = 'MEDIUM'
+    pathId: string,
+    name: string,
+    pathPoints: Position[],
+    difficulty: PathDifficulty = "MEDIUM"
   ): Promise<string> {
     await this.ensureLoaded();
-    
+
     if (this.pathConfigs.has(pathId)) {
       throw new Error(`Path with ID ${pathId} already exists`);
     }
-    
+
     const pathConfig: PathConfig = {
       id: pathId,
       name,
       description: `カスタムパス: ${name}`,
       difficulty,
       pathPoints: [...pathPoints],
-      isDefault: false
+      isDefault: false,
     };
-    
+
     const movementPath = new MovementPath(pathPoints);
-    
+
     this.pathConfigs.set(pathId, pathConfig);
     this.movementPaths.set(pathId, movementPath);
-    
+
     return pathId;
   }
 
@@ -281,15 +281,15 @@ export class JsonPathConfigRepository {
    */
   async removeCustomPath(pathId: string): Promise<boolean> {
     await this.ensureLoaded();
-    
+
     const pathConfig = this.pathConfigs.get(pathId);
     if (!pathConfig || pathConfig.isDefault) {
       return false;
     }
-    
+
     this.pathConfigs.delete(pathId);
     this.movementPaths.delete(pathId);
-    
+
     return true;
   }
 
@@ -299,26 +299,26 @@ export class JsonPathConfigRepository {
    * @param tolerance 許容誤差（デフォルト: 5ピクセル）
    * @returns 最適化されたパスポイント
    */
-  async optimizePath(pathPoints: Position[], tolerance: number = 5): Promise<Position[]> {
+  async optimizePath(pathPoints: Position[], tolerance = 5): Promise<Position[]> {
     if (pathPoints.length <= 2) {
       return [...pathPoints];
     }
-    
+
     const optimized: Position[] = [pathPoints[0]]; // 開始点は必ず含める
-    
+
     for (let i = 1; i < pathPoints.length - 1; i++) {
       const prev = pathPoints[i - 1];
       const current = pathPoints[i];
       const next = pathPoints[i + 1];
-      
+
       // 3点が直線上にあるかチェック
       if (!this.isPointOnLine(prev, current, next, tolerance)) {
         optimized.push(current);
       }
     }
-    
+
     optimized.push(pathPoints[pathPoints.length - 1]); // 終了点は必ず含める
-    
+
     return optimized;
   }
 
@@ -335,7 +335,7 @@ export class JsonPathConfigRepository {
     const d1 = p1.distanceTo(p2);
     const d2 = p2.distanceTo(p3);
     const d3 = p1.distanceTo(p3);
-    
+
     return Math.abs(d1 + d2 - d3) <= tolerance;
   }
 
@@ -362,7 +362,7 @@ export class JsonPathConfigRepository {
    */
   async saveToFiles(): Promise<void> {
     // 将来的にはJSONファイルに保存する実装を追加
-    console.log('Path configurations saved (placeholder implementation)');
+    console.log("Path configurations saved (placeholder implementation)");
   }
 
   /**
@@ -384,10 +384,10 @@ export class JsonPathConfigRepository {
     movementPaths: Map<string, MovementPath>;
   }> {
     await this.ensureLoaded();
-    
+
     return {
       pathConfigs: new Map(this.pathConfigs),
-      movementPaths: new Map(this.movementPaths)
+      movementPaths: new Map(this.movementPaths),
     };
   }
 
@@ -428,21 +428,24 @@ export class JsonPathConfigRepository {
    * @param pathId パスID
    * @param updates 更新内容
    */
-  async updatePathConfig(pathId: string, updates: Partial<Omit<PathConfig, 'id' | 'isDefault'>>): Promise<void> {
+  async updatePathConfig(
+    pathId: string,
+    updates: Partial<Omit<PathConfig, "id" | "isDefault">>
+  ): Promise<void> {
     await this.ensureLoaded();
-    
+
     const pathConfig = this.pathConfigs.get(pathId);
     if (!pathConfig) {
       throw new Error(`Path config not found: ${pathId}`);
     }
-    
+
     const updatedConfig = {
       ...pathConfig,
-      ...updates
+      ...updates,
     };
-    
+
     this.pathConfigs.set(pathId, updatedConfig);
-    
+
     // パスポイントが更新された場合は MovementPath も更新
     if (updates.pathPoints) {
       this.movementPaths.set(pathId, new MovementPath(updates.pathPoints));

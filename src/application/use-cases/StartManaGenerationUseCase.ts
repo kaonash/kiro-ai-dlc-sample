@@ -1,4 +1,4 @@
-import { ManaPool } from "../../domain/entities/ManaPool";
+import type { ManaPool } from "../../domain/entities/ManaPool";
 import { ManaGenerationService } from "../../domain/services/ManaGenerationService";
 import { ManaValidationService } from "../../domain/services/ManaValidationService";
 
@@ -36,7 +36,7 @@ export class StartManaGenerationUseCase {
       if (!validationResult.isValid) {
         return {
           isSuccess: false,
-          error: validationResult.errors.join(", ")
+          error: validationResult.errors.join(", "),
         };
       }
 
@@ -47,28 +47,34 @@ export class StartManaGenerationUseCase {
         return {
           isSuccess: true,
           generatedAmount: 0,
-          newLastGenerationTime: lastGenerationTime
+          newLastGenerationTime: lastGenerationTime,
         };
       }
 
       const currentGameTime = gameSessionManager.getElapsedGameTime();
 
       // 時間検証
-      const timeValidation = this.validationService.validateGameTime(currentGameTime, lastGenerationTime);
+      const timeValidation = this.validationService.validateGameTime(
+        currentGameTime,
+        lastGenerationTime
+      );
       if (!timeValidation.isValid) {
         return {
           isSuccess: false,
-          error: `時間が逆行しています: ${timeValidation.errors.join(", ")}`
+          error: `時間が逆行しています: ${timeValidation.errors.join(", ")}`,
         };
       }
 
       // 生成判定
-      const shouldGenerate = this.generationService.shouldGenerateMana(lastGenerationTime, currentGameTime);
+      const shouldGenerate = this.generationService.shouldGenerateMana(
+        lastGenerationTime,
+        currentGameTime
+      );
       if (!shouldGenerate.shouldGenerate) {
         return {
           isSuccess: true,
           generatedAmount: 0,
-          newLastGenerationTime: lastGenerationTime
+          newLastGenerationTime: lastGenerationTime,
         };
       }
 
@@ -82,7 +88,7 @@ export class StartManaGenerationUseCase {
       if (!generationResult.isSuccess) {
         return {
           isSuccess: false,
-          error: generationResult.error
+          error: generationResult.error,
         };
       }
 
@@ -95,18 +101,21 @@ export class StartManaGenerationUseCase {
       return {
         isSuccess: true,
         generatedAmount: generationResult.generatedAmount,
-        newLastGenerationTime
+        newLastGenerationTime,
       };
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力生成中に予期しないエラーが発生しました"
+        error:
+          error instanceof Error ? error.message : "魔力生成中に予期しないエラーが発生しました",
       };
     }
   }
 
-  private validateRequest(request: StartManaGenerationRequest): { isValid: boolean; errors: string[] } {
+  private validateRequest(request: StartManaGenerationRequest): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!request.manaPool) {
@@ -123,7 +132,7 @@ export class StartManaGenerationUseCase {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }

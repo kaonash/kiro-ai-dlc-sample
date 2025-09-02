@@ -118,7 +118,7 @@ describe('UpdateEnemiesUseCase', () => {
         healthReduced += damage;
       };
 
-      const result = await useCase.execute(waveScheduler, 1000);
+      const result = await useCase.execute(waveScheduler, 1000, movementPath);
 
       expect(result.success).toBe(true);
       expect(result.baseDamage).toBeGreaterThan(0);
@@ -137,7 +137,7 @@ describe('UpdateEnemiesUseCase', () => {
         expect(enemyId).toBe(enemy!.id);
       };
 
-      const result = await useCase.execute(waveScheduler, 1000);
+      const result = await useCase.execute(waveScheduler, 1000, movementPath);
 
       expect(result.success).toBe(true);
       expect(positionUpdated).toBe(true);
@@ -156,7 +156,7 @@ describe('UpdateEnemiesUseCase', () => {
         expect(enemyId).toBe(enemy!.id);
       };
 
-      const result = await useCase.execute(waveScheduler, 1000);
+      const result = await useCase.execute(waveScheduler, 1000, movementPath);
 
       expect(result.success).toBe(true);
       expect(enemyRemoved).toBe(true);
@@ -171,7 +171,7 @@ describe('UpdateEnemiesUseCase', () => {
         throw new Error('UI Error');
       };
 
-      const result = await useCase.execute(waveScheduler, 1000);
+      const result = await useCase.execute(waveScheduler, 1000, movementPath);
 
       // Should still succeed even if UI update fails
       expect(result.success).toBe(true);
@@ -181,7 +181,7 @@ describe('UpdateEnemiesUseCase', () => {
       waveScheduler.startWaveScheduling();
       const wave = waveScheduler.startNextWave(movementPath);
 
-      const result = await useCase.execute(waveScheduler, 1000);
+      const result = await useCase.execute(waveScheduler, 1000, movementPath);
 
       expect(result.success).toBe(true);
       expect(result.newEnemiesSpawned).toBeGreaterThan(0);
@@ -194,7 +194,7 @@ describe('UpdateEnemiesUseCase', () => {
       const wave = waveScheduler.startNextWave(movementPath);
       wave!.spawnNextEnemy(movementPath);
 
-      await useCase.execute(waveScheduler, 1000);
+      await useCase.execute(waveScheduler, 1000, movementPath);
       const stats = await useCase.getUpdateStatistics();
 
       expect(stats.totalUpdates).toBe(1);

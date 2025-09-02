@@ -1,6 +1,6 @@
-import { ManaPool } from "../../domain/entities/ManaPool";
+import type { ManaPool } from "../../domain/entities/ManaPool";
+import type { DomainEvent } from "../../domain/events/ManaEvents";
 import { ManaValidationService } from "../../domain/services/ManaValidationService";
-import { DomainEvent } from "../../domain/events/ManaEvents";
 
 export interface GetManaStatusRequest {
   manaPool: ManaPool;
@@ -79,7 +79,7 @@ export class GetManaStatusUseCase {
       if (!request.manaPool) {
         return {
           isSuccess: false,
-          error: "魔力プールが無効です"
+          error: "魔力プールが無効です",
         };
       }
 
@@ -93,18 +93,17 @@ export class GetManaStatusUseCase {
         percentage: basicStatus.percentage,
         isAtMax: basicStatus.isAtMax,
         canGenerate: !basicStatus.isAtMax,
-        availableSpace: basicStatus.max - basicStatus.current
+        availableSpace: basicStatus.max - basicStatus.current,
       };
 
       return {
         isSuccess: true,
-        status
+        status,
       };
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力状態取得中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "魔力状態取得中にエラーが発生しました",
       };
     }
   }
@@ -115,7 +114,7 @@ export class GetManaStatusUseCase {
       if (request.currentGameTime < 0 || request.lastGenerationTime < 0) {
         return {
           isSuccess: false,
-          error: "時間情報が無効です"
+          error: "時間情報が無効です",
         };
       }
 
@@ -134,23 +133,27 @@ export class GetManaStatusUseCase {
       baseResult.status.canGenerateNow = canGenerateNow;
 
       return baseResult;
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "タイミング付き魔力状態取得中にエラーが発生しました"
+        error:
+          error instanceof Error
+            ? error.message
+            : "タイミング付き魔力状態取得中にエラーが発生しました",
       };
     }
   }
 
-  async executeWithCardCosts(request: GetManaStatusWithCardCostsRequest): Promise<GetManaStatusWithCardCostsResponse> {
+  async executeWithCardCosts(
+    request: GetManaStatusWithCardCostsRequest
+  ): Promise<GetManaStatusWithCardCostsResponse> {
     try {
       // カードコストの検証
-      const invalidCosts = request.cardCosts.filter(cost => cost < 0);
+      const invalidCosts = request.cardCosts.filter((cost) => cost < 0);
       if (invalidCosts.length > 0) {
         return {
           isSuccess: false,
-          error: `無効なカードコストが含まれています: ${invalidCosts.join(", ")}`
+          error: `無効なカードコストが含まれています: ${invalidCosts.join(", ")}`,
         };
       }
 
@@ -160,34 +163,38 @@ export class GetManaStatusUseCase {
       }
 
       const manaPool = request.manaPool;
-      const cardAvailability: CardAvailabilityInfo[] = request.cardCosts.map(cost => {
+      const cardAvailability: CardAvailabilityInfo[] = request.cardCosts.map((cost) => {
         const canConsume = manaPool.canConsume(cost);
         return {
           cost,
           available: canConsume,
-          shortage: canConsume ? 0 : cost - manaPool.getCurrentMana()
+          shortage: canConsume ? 0 : cost - manaPool.getCurrentMana(),
         };
       });
 
-      const availableCardCount = cardAvailability.filter(card => card.available).length;
-      const greyedOutCardCount = cardAvailability.filter(card => !card.available).length;
+      const availableCardCount = cardAvailability.filter((card) => card.available).length;
+      const greyedOutCardCount = cardAvailability.filter((card) => !card.available).length;
 
       return {
         ...baseResult,
         cardAvailability,
         availableCardCount,
-        greyedOutCardCount
+        greyedOutCardCount,
       };
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "カードコスト付き魔力状態取得中にエラーが発生しました"
+        error:
+          error instanceof Error
+            ? error.message
+            : "カードコスト付き魔力状態取得中にエラーが発生しました",
       };
     }
   }
 
-  async executeWithHistory(request: GetManaStatusWithHistoryRequest): Promise<GetManaStatusWithHistoryResponse> {
+  async executeWithHistory(
+    request: GetManaStatusWithHistoryRequest
+  ): Promise<GetManaStatusWithHistoryResponse> {
     try {
       const baseResult = await this.execute(request);
       if (!baseResult.isSuccess) {
@@ -198,18 +205,20 @@ export class GetManaStatusUseCase {
 
       return {
         ...baseResult,
-        recentEvents
+        recentEvents,
       };
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "履歴付き魔力状態取得中にエラーが発生しました"
+        error:
+          error instanceof Error ? error.message : "履歴付き魔力状態取得中にエラーが発生しました",
       };
     }
   }
 
-  async executeWithPerformanceStats(request: GetManaStatusWithPerformanceRequest): Promise<GetManaStatusWithPerformanceResponse> {
+  async executeWithPerformanceStats(
+    request: GetManaStatusWithPerformanceRequest
+  ): Promise<GetManaStatusWithPerformanceResponse> {
     try {
       const baseResult = await this.execute(request);
       if (!baseResult.isSuccess || !baseResult.status) {
@@ -221,19 +230,22 @@ export class GetManaStatusUseCase {
 
       const performanceStats: PerformanceStats = {
         averageManaPerMinute: sessionMinutes > 0 ? currentMana / sessionMinutes : 0,
-        averageManaPerCard: request.totalCardsPlayed > 0 ? currentMana / request.totalCardsPlayed : 0,
-        manaEfficiency: (currentMana / baseResult.status.max) * 100
+        averageManaPerCard:
+          request.totalCardsPlayed > 0 ? currentMana / request.totalCardsPlayed : 0,
+        manaEfficiency: (currentMana / baseResult.status.max) * 100,
       };
 
       return {
         ...baseResult,
-        performanceStats
+        performanceStats,
       };
-
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "パフォーマンス統計付き魔力状態取得中にエラーが発生しました"
+        error:
+          error instanceof Error
+            ? error.message
+            : "パフォーマンス統計付き魔力状態取得中にエラーが発生しました",
       };
     }
   }

@@ -1,17 +1,17 @@
-import { DomainEvent } from "../../domain/events/ManaEvents";
-import { EventBus, EventResult, EventStatistics, EventHandler } from "./EventBus";
+import type { DomainEvent } from "../../domain/events/ManaEvents";
+import type { EventBus, EventHandler, EventResult, EventStatistics } from "./EventBus";
 
 export class InMemoryEventBus implements EventBus {
   private readonly subscribers: Map<string, EventHandler[]> = new Map();
   private readonly eventCounts: Map<string, number> = new Map();
-  private totalEventsPublished: number = 0;
+  private totalEventsPublished = 0;
 
   publish(event: DomainEvent): EventResult {
     try {
       if (!event) {
         return {
           isSuccess: false,
-          error: "イベントが無効です"
+          error: "イベントが無効です",
         };
       }
 
@@ -36,7 +36,7 @@ export class InMemoryEventBus implements EventBus {
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "イベント発行中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "イベント発行中にエラーが発生しました",
       };
     }
   }
@@ -46,14 +46,14 @@ export class InMemoryEventBus implements EventBus {
       if (!eventType || eventType.trim() === "") {
         return {
           isSuccess: false,
-          error: "イベントタイプが無効です"
+          error: "イベントタイプが無効です",
         };
       }
 
       if (!handler) {
         return {
           isSuccess: false,
-          error: "ハンドラーが無効です"
+          error: "ハンドラーが無効です",
         };
       }
 
@@ -68,7 +68,7 @@ export class InMemoryEventBus implements EventBus {
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "イベント購読中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "イベント購読中にエラーが発生しました",
       };
     }
   }
@@ -94,7 +94,7 @@ export class InMemoryEventBus implements EventBus {
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "イベント購読解除中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "イベント購読解除中にエラーが発生しました",
       };
     }
   }
@@ -106,7 +106,8 @@ export class InMemoryEventBus implements EventBus {
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "全イベント購読解除中にエラーが発生しました"
+        error:
+          error instanceof Error ? error.message : "全イベント購読解除中にエラーが発生しました",
       };
     }
   }
@@ -131,7 +132,7 @@ export class InMemoryEventBus implements EventBus {
       totalEventsPublished: this.totalEventsPublished,
       eventTypes,
       subscribersByType,
-      eventsByType
+      eventsByType,
     };
   }
 }

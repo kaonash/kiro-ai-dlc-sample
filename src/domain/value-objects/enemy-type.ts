@@ -1,4 +1,4 @@
-import { EnemyStats } from './enemy-stats';
+import { EnemyStats } from "./enemy-stats";
 
 /**
  * 敵の種類を表現する値オブジェクト
@@ -13,37 +13,37 @@ export class EnemyType {
 
   // 敵タイプの定義
   static readonly BASIC = new EnemyType(
-    'BASIC',
-    '基本敵',
-    'バランスの取れた標準的な敵',
+    "BASIC",
+    "基本敵",
+    "バランスの取れた標準的な敵",
     new EnemyStats(100, 50, 100)
   );
 
   static readonly RANGED = new EnemyType(
-    'RANGED',
-    '遠距離攻撃敵',
-    '体力は低いが遠距離攻撃が可能',
+    "RANGED",
+    "遠距離攻撃敵",
+    "体力は低いが遠距離攻撃が可能",
     new EnemyStats(70, 50, 100)
   );
 
   static readonly FAST = new EnemyType(
-    'FAST',
-    '高速敵',
-    '素早く移動するが体力と攻撃力が低い',
+    "FAST",
+    "高速敵",
+    "素早く移動するが体力と攻撃力が低い",
     new EnemyStats(60, 30, 150)
   );
 
   static readonly ENHANCED = new EnemyType(
-    'ENHANCED',
-    '強化敵',
-    '基本敵より強化されたバージョン',
+    "ENHANCED",
+    "強化敵",
+    "基本敵より強化されたバージョン",
     new EnemyStats(150, 70, 90)
   );
 
   static readonly BOSS = new EnemyType(
-    'BOSS',
-    'ボス敵',
-    '最強の体力と攻撃力を持つが移動が遅い',
+    "BOSS",
+    "ボス敵",
+    "最強の体力と攻撃力を持つが移動が遅い",
     new EnemyStats(300, 100, 60)
   );
 
@@ -84,13 +84,7 @@ export class EnemyType {
    * @returns すべての敵タイプの配列
    */
   static getAllTypes(): EnemyType[] {
-    return [
-      EnemyType.BASIC,
-      EnemyType.RANGED,
-      EnemyType.FAST,
-      EnemyType.ENHANCED,
-      EnemyType.BOSS
-    ];
+    return [EnemyType.BASIC, EnemyType.RANGED, EnemyType.FAST, EnemyType.ENHANCED, EnemyType.BOSS];
   }
 
   /**
@@ -101,12 +95,12 @@ export class EnemyType {
    */
   static fromString(typeString: string): EnemyType {
     const allTypes = EnemyType.getAllTypes();
-    const foundType = allTypes.find(type => type.type === typeString);
-    
+    const foundType = allTypes.find((type) => type.type === typeString);
+
     if (!foundType) {
       throw new Error(`Unknown enemy type: ${typeString}`);
     }
-    
+
     return foundType;
   }
 }

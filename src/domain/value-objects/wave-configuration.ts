@@ -1,4 +1,4 @@
-import { EnemyType } from './enemy-type';
+import { EnemyType } from "./enemy-type";
 
 /**
  * 波の設定を表現する値オブジェクト
@@ -10,13 +10,13 @@ export class WaveConfiguration {
     public readonly spawnInterval: number
   ) {
     if (baseEnemyCount <= 0) {
-      throw new Error('Base enemy count must be positive');
+      throw new Error("Base enemy count must be positive");
     }
     if (enemyCountIncrement < 0) {
-      throw new Error('Enemy count increment must be non-negative');
+      throw new Error("Enemy count increment must be non-negative");
     }
     if (spawnInterval <= 0) {
-      throw new Error('Spawn interval must be positive');
+      throw new Error("Spawn interval must be positive");
     }
   }
 
@@ -27,9 +27,9 @@ export class WaveConfiguration {
    */
   getEnemyCountForWave(waveNumber: number): number {
     if (waveNumber < 1) {
-      throw new Error('Wave number must be positive');
+      throw new Error("Wave number must be positive");
     }
-    
+
     return this.baseEnemyCount + this.enemyCountIncrement * (waveNumber - 1);
   }
 
@@ -40,14 +40,14 @@ export class WaveConfiguration {
    */
   getEnemyTypesForWave(waveNumber: number): EnemyType[] {
     if (waveNumber < 1) {
-      throw new Error('Wave number must be positive');
+      throw new Error("Wave number must be positive");
     }
 
     const enemyCount = this.getEnemyCountForWave(waveNumber);
     const distribution = this.getEnemyTypeDistribution(waveNumber);
-    
+
     const enemyTypes: EnemyType[] = [];
-    
+
     // 分布に基づいて敵タイプを生成
     for (const [enemyType, ratio] of distribution.entries()) {
       const count = Math.round(enemyCount * ratio);
@@ -55,17 +55,17 @@ export class WaveConfiguration {
         enemyTypes.push(enemyType);
       }
     }
-    
+
     // 端数調整：目標数に満たない場合は基本敵で補完
     while (enemyTypes.length < enemyCount) {
       enemyTypes.push(EnemyType.BASIC);
     }
-    
+
     // 端数調整：目標数を超えた場合は削除
     while (enemyTypes.length > enemyCount) {
       enemyTypes.pop();
     }
-    
+
     // シャッフルして順序をランダム化
     return this.shuffleArray(enemyTypes);
   }
@@ -77,7 +77,7 @@ export class WaveConfiguration {
    */
   getEnemyTypeDistribution(waveNumber: number): Map<EnemyType, number> {
     const distribution = new Map<EnemyType, number>();
-    
+
     if (waveNumber <= 5) {
       // 波1-5: 基本敵中心
       distribution.set(EnemyType.BASIC, 0.8);
@@ -101,7 +101,7 @@ export class WaveConfiguration {
       distribution.set(EnemyType.ENHANCED, 0.2);
       distribution.set(EnemyType.BOSS, 0.1);
     }
-    
+
     return distribution;
   }
 

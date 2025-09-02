@@ -1,9 +1,9 @@
 import { ManaPool } from "../../domain/entities/ManaPool";
-import { 
-  ManaPoolRepository, 
-  SaveResult, 
-  DeleteResult, 
-  ManaPoolStatistics 
+import type {
+  DeleteResult,
+  ManaPoolRepository,
+  ManaPoolStatistics,
+  SaveResult,
 } from "./ManaPoolRepository";
 
 export class InMemoryManaPoolRepository implements ManaPoolRepository {
@@ -14,7 +14,7 @@ export class InMemoryManaPoolRepository implements ManaPoolRepository {
       if (!manaPool) {
         return {
           isSuccess: false,
-          error: "魔力プールが無効です"
+          error: "魔力プールが無効です",
         };
       }
 
@@ -24,12 +24,12 @@ export class InMemoryManaPoolRepository implements ManaPoolRepository {
 
       return {
         isSuccess: true,
-        savedPool: poolCopy
+        savedPool: poolCopy,
       };
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力プール保存中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "魔力プール保存中にエラーが発生しました",
       };
     }
   }
@@ -44,7 +44,7 @@ export class InMemoryManaPoolRepository implements ManaPoolRepository {
   }
 
   async findAll(): Promise<ManaPool[]> {
-    return Array.from(this.pools.values()).map(pool => this.createPoolCopy(pool));
+    return Array.from(this.pools.values()).map((pool) => this.createPoolCopy(pool));
   }
 
   async delete(id: string): Promise<DeleteResult> {
@@ -54,7 +54,7 @@ export class InMemoryManaPoolRepository implements ManaPoolRepository {
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力プール削除中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "魔力プール削除中にエラーが発生しました",
       };
     }
   }
@@ -66,58 +66,58 @@ export class InMemoryManaPoolRepository implements ManaPoolRepository {
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力プールクリア中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "魔力プールクリア中にエラーが発生しました",
       };
     }
   }
 
   async findByManaRange(minMana: number, maxMana: number): Promise<ManaPool[]> {
     const result: ManaPool[] = [];
-    
+
     for (const pool of this.pools.values()) {
       const currentMana = pool.getCurrentMana();
       if (currentMana >= minMana && currentMana <= maxMana) {
         result.push(this.createPoolCopy(pool));
       }
     }
-    
+
     return result;
   }
 
   async findAtMaxCapacity(): Promise<ManaPool[]> {
     const result: ManaPool[] = [];
-    
+
     for (const pool of this.pools.values()) {
       if (pool.isAtMaxCapacity()) {
         result.push(this.createPoolCopy(pool));
       }
     }
-    
+
     return result;
   }
 
   async findLowMana(threshold: number): Promise<ManaPool[]> {
     const result: ManaPool[] = [];
-    
+
     for (const pool of this.pools.values()) {
       if (pool.getCurrentMana() < threshold) {
         result.push(this.createPoolCopy(pool));
       }
     }
-    
+
     return result;
   }
 
   async getStatistics(): Promise<ManaPoolStatistics> {
     const pools = Array.from(this.pools.values());
-    
+
     if (pools.length === 0) {
       return {
         totalPools: 0,
         totalMana: 0,
         averageMana: 0,
         totalCapacity: 0,
-        averageCapacity: 0
+        averageCapacity: 0,
       };
     }
 
@@ -129,17 +129,13 @@ export class InMemoryManaPoolRepository implements ManaPoolRepository {
       totalMana,
       averageMana: totalMana / pools.length,
       totalCapacity,
-      averageCapacity: totalCapacity / pools.length
+      averageCapacity: totalCapacity / pools.length,
     };
   }
 
   private createPoolCopy(original: ManaPool): ManaPool {
     // 新しいManaPoolインスタンスを作成
-    const copy = new ManaPool(
-      original.getId(),
-      original.getCurrentMana(),
-      original.getMaxMana()
-    );
+    const copy = new ManaPool(original.getId(), original.getCurrentMana(), original.getMaxMana());
 
     // ドメインイベントもコピー
     const events = original.getDomainEvents();

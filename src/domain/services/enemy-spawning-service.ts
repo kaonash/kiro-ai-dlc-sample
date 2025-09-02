@@ -1,13 +1,13 @@
-import { Enemy } from '../entities/enemy';
-import { EnemyType } from '../value-objects/enemy-type';
-import { Position } from '../value-objects/position';
-import { MovementPath } from '../value-objects/movement-path';
+import { Enemy } from "../entities/enemy";
+import { EnemyType } from "../value-objects/enemy-type";
+import type { MovementPath } from "../value-objects/movement-path";
+import type { Position } from "../value-objects/position";
 
 /**
  * 敵の生成処理を担当するドメインサービス
  */
 export class EnemySpawningService {
-  private spawnCounter: number = 0;
+  private spawnCounter = 0;
   private spawnStatistics: Map<EnemyType, number> = new Map();
 
   /**
@@ -20,10 +20,10 @@ export class EnemySpawningService {
    */
   spawnEnemy(enemyId: string, type: EnemyType, spawnPoint: Position, path: MovementPath): Enemy {
     const enemy = new Enemy(enemyId, type, path, new Date());
-    
+
     // 統計情報を更新
     this.updateSpawnStatistics(type);
-    
+
     return enemy;
   }
 
@@ -34,7 +34,7 @@ export class EnemySpawningService {
    */
   selectSpawnPoint(availablePoints: Position[]): Position {
     if (availablePoints.length === 0) {
-      throw new Error('No spawn points available');
+      throw new Error("No spawn points available");
     }
 
     if (availablePoints.length === 1) {
@@ -110,7 +110,7 @@ export class EnemySpawningService {
     }
 
     if (types.length === 0) {
-      throw new Error('No enemy types provided');
+      throw new Error("No enemy types provided");
     }
 
     const enemies: Enemy[] = [];
@@ -142,11 +142,14 @@ export class EnemySpawningService {
     totalSpawned: number;
     spawnedByType: Map<EnemyType, number>;
   } {
-    const totalSpawned = Array.from(this.spawnStatistics.values()).reduce((sum, count) => sum + count, 0);
-    
+    const totalSpawned = Array.from(this.spawnStatistics.values()).reduce(
+      (sum, count) => sum + count,
+      0
+    );
+
     return {
       totalSpawned,
-      spawnedByType: new Map(this.spawnStatistics)
+      spawnedByType: new Map(this.spawnStatistics),
     };
   }
 
@@ -165,7 +168,7 @@ export class EnemySpawningService {
    */
   selectEnemyTypeByDistribution(distribution: Map<EnemyType, number>): EnemyType {
     if (distribution.size === 0) {
-      throw new Error('No enemy type distribution provided');
+      throw new Error("No enemy type distribution provided");
     }
 
     // 累積確率を計算

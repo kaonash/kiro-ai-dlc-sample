@@ -1,6 +1,6 @@
-import { WaveScheduler } from '../../domain/entities/wave-scheduler';
-import { MovementPath } from '../../domain/value-objects/movement-path';
-import { Position } from '../../domain/value-objects/position';
+import type { WaveScheduler } from "../../domain/entities/wave-scheduler";
+import type { MovementPath } from "../../domain/value-objects/movement-path";
+import type { Position } from "../../domain/value-objects/position";
 
 /**
  * ゲームセッションサービスのインターフェース
@@ -68,14 +68,17 @@ export class StartWaveUseCase {
    * @param movementPath 移動パス
    * @returns 波開始結果
    */
-  async execute(waveScheduler: WaveScheduler, movementPath: MovementPath): Promise<StartWaveResult> {
+  async execute(
+    waveScheduler: WaveScheduler,
+    movementPath: MovementPath
+  ): Promise<StartWaveResult> {
     try {
       // 前提条件を検証
       const validation = await this.validatePreconditions(waveScheduler);
       if (!validation.isValid) {
         return {
           success: false,
-          error: validation.errors[0]
+          error: validation.errors[0],
         };
       }
 
@@ -84,7 +87,7 @@ export class StartWaveUseCase {
       if (!wave) {
         return {
           success: false,
-          error: '次の波を開始できません'
+          error: "次の波を開始できません",
         };
       }
 
@@ -92,19 +95,19 @@ export class StartWaveUseCase {
       try {
         this.uiFeedbackService.showWaveStartNotification(wave.waveNumber);
       } catch (error) {
-        console.warn('UI notification failed:', error);
+        console.warn("UI notification failed:", error);
       }
 
       return {
         success: true,
         waveNumber: wave.waveNumber,
         enemyCount: wave.totalEnemyCount,
-        message: `波${wave.waveNumber}が開始されました`
+        message: `波${wave.waveNumber}が開始されました`,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : '予期しないエラーが発生しました'
+        error: error instanceof Error ? error.message : "予期しないエラーが発生しました",
       };
     }
   }
@@ -119,27 +122,27 @@ export class StartWaveUseCase {
 
     // ゲームがアクティブかチェック
     if (!this.gameSessionService.isGameActive()) {
-      errors.push('ゲームがアクティブではありません');
+      errors.push("ゲームがアクティブではありません");
     }
 
     // 波スケジューラーがアクティブかチェック
     if (!waveScheduler.isActive) {
-      errors.push('波スケジューラーがアクティブではありません');
+      errors.push("波スケジューラーがアクティブではありません");
     }
 
     // 次の波を開始できるかチェック
     if (waveScheduler.isActive && !waveScheduler.canStartNextWave()) {
-      errors.push('次の波を開始できません');
+      errors.push("次の波を開始できません");
     }
 
     // プレイヤーの体力チェック
     if (this.gameSessionService.getPlayerHealth() <= 0) {
-      errors.push('プレイヤーの体力が0です');
+      errors.push("プレイヤーの体力が0です");
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -150,7 +153,8 @@ export class StartWaveUseCase {
    */
   async getWavePreview(waveScheduler: WaveScheduler): Promise<WavePreview> {
     const nextWaveNumber = waveScheduler.waveNumber + 1;
-    const estimatedEnemyCount = waveScheduler.currentWave?.totalEnemyCount || 
+    const estimatedEnemyCount =
+      waveScheduler.currentWave?.totalEnemyCount ||
       (waveScheduler.waveNumber === 0 ? 10 : 10 + (nextWaveNumber - 1) * 10);
 
     // 開始可能かチェック
@@ -169,7 +173,7 @@ export class StartWaveUseCase {
       estimatedEnemyCount,
       canStart,
       timeUntilStart,
-      reason: canStart ? undefined : validation.errors[0]
+      reason: canStart ? undefined : validation.errors[0],
     };
   }
 
@@ -179,20 +183,23 @@ export class StartWaveUseCase {
    * @param movementPath 移動パス
    * @returns 波開始結果
    */
-  async forceStartWave(waveScheduler: WaveScheduler, movementPath: MovementPath): Promise<StartWaveResult> {
+  async forceStartWave(
+    waveScheduler: WaveScheduler,
+    movementPath: MovementPath
+  ): Promise<StartWaveResult> {
     try {
       // 基本的な前提条件のみチェック
       if (!this.gameSessionService.isGameActive()) {
         return {
           success: false,
-          error: 'ゲームがアクティブではありません'
+          error: "ゲームがアクティブではありません",
         };
       }
 
       if (this.gameSessionService.getPlayerHealth() <= 0) {
         return {
           success: false,
-          error: 'プレイヤーの体力が0です'
+          error: "プレイヤーの体力が0です",
         };
       }
 
@@ -214,7 +221,7 @@ export class StartWaveUseCase {
       if (!wave) {
         return {
           success: false,
-          error: '波の強制開始に失敗しました'
+          error: "波の強制開始に失敗しました",
         };
       }
 
@@ -222,19 +229,19 @@ export class StartWaveUseCase {
       try {
         this.uiFeedbackService.showWaveStartNotification(wave.waveNumber);
       } catch (error) {
-        console.warn('UI notification failed:', error);
+        console.warn("UI notification failed:", error);
       }
 
       return {
         success: true,
         waveNumber: wave.waveNumber,
         enemyCount: wave.totalEnemyCount,
-        message: `波${wave.waveNumber}が強制開始されました`
+        message: `波${wave.waveNumber}が強制開始されました`,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : '予期しないエラーが発生しました'
+        error: error instanceof Error ? error.message : "予期しないエラーが発生しました",
       };
     }
   }
@@ -256,26 +263,26 @@ export class StartWaveUseCase {
     const shouldStart = validation.isValid;
 
     if (shouldStart) {
-      recommendations.push('波を開始する準備が整いました');
-      
+      recommendations.push("波を開始する準備が整いました");
+
       const playerHealth = this.gameSessionService.getPlayerHealth();
       if (playerHealth < 500) {
-        warnings.push('プレイヤーの体力が低下しています');
+        warnings.push("プレイヤーの体力が低下しています");
       }
 
       const nextWaveNumber = waveScheduler.waveNumber + 1;
       if (nextWaveNumber > 10) {
-        warnings.push('高難易度の波が開始されます');
+        warnings.push("高難易度の波が開始されます");
       }
     } else {
-      recommendations.push('波開始の前提条件を満たしてください');
-      recommendations.push(...validation.errors.map(error => `解決が必要: ${error}`));
+      recommendations.push("波開始の前提条件を満たしてください");
+      recommendations.push(...validation.errors.map((error) => `解決が必要: ${error}`));
     }
 
     return {
       shouldStart,
       recommendations,
-      warnings
+      warnings,
     };
   }
 
@@ -295,18 +302,17 @@ export class StartWaveUseCase {
     const currentTime = this.gameSessionService.getGameTime();
     const gameElapsedTime = currentTime - waveScheduler.gameStartTime.getTime();
     const nextWaveETA = Math.max(0, waveScheduler.nextWaveTime.getTime() - currentTime);
-    
+
     // 平均波間隔を計算（簡略化）
-    const averageWaveInterval = stats.currentWaveNumber > 0 
-      ? gameElapsedTime / stats.currentWaveNumber 
-      : 0;
+    const averageWaveInterval =
+      stats.currentWaveNumber > 0 ? gameElapsedTime / stats.currentWaveNumber : 0;
 
     return {
       totalWavesStarted: stats.currentWaveNumber,
       currentWaveNumber: stats.currentWaveNumber,
       averageWaveInterval: Math.round(averageWaveInterval),
       gameElapsedTime: Math.round(gameElapsedTime),
-      nextWaveETA: Math.round(nextWaveETA)
+      nextWaveETA: Math.round(nextWaveETA),
     };
   }
 }

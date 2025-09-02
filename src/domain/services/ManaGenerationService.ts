@@ -1,4 +1,4 @@
-import { ManaPool } from "../entities/ManaPool";
+import type { ManaPool } from "../entities/ManaPool";
 import { ManaTransaction } from "../value-objects/ManaTransaction";
 
 export interface GenerationCheckResult {
@@ -13,7 +13,7 @@ export interface GenerationResult {
 }
 
 export class ManaGenerationService {
-  private generationRate: number = 1000; // 1秒 = 1000ms
+  private generationRate = 1000; // 1秒 = 1000ms
 
   shouldGenerateMana(lastGenerationTime: number, currentGameTime: number): GenerationCheckResult {
     if (currentGameTime < lastGenerationTime) {
@@ -25,7 +25,7 @@ export class ManaGenerationService {
 
     return {
       shouldGenerate: generationCount > 0,
-      generationCount
+      generationCount,
     };
   }
 
@@ -33,14 +33,14 @@ export class ManaGenerationService {
     if (amount < 0) {
       return {
         isSuccess: false,
-        error: "生成量は0以上である必要があります"
+        error: "生成量は0以上である必要があります",
       };
     }
 
     if (amount === 0) {
       return {
         isSuccess: true,
-        generatedAmount: 0
+        generatedAmount: 0,
       };
     }
 
@@ -51,24 +51,24 @@ export class ManaGenerationService {
       if (!result.isSuccess) {
         return {
           isSuccess: false,
-          error: result.error
+          error: result.error,
         };
       }
 
       return {
         isSuccess: true,
-        generatedAmount: result.actualAmount
+        generatedAmount: result.actualAmount,
       };
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力生成中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "魔力生成中にエラーが発生しました",
       };
     }
   }
 
   calculateNextGenerationTime(lastGenerationTime: number, generationCount: number): number {
-    return lastGenerationTime + (generationCount * this.generationRate);
+    return lastGenerationTime + generationCount * this.generationRate;
   }
 
   getGenerationRate(): number {

@@ -1,13 +1,13 @@
-import { Enemy } from '../entities/enemy';
-import { Position } from '../value-objects/position';
+import type { Enemy } from "../entities/enemy";
+import type { Position } from "../value-objects/position";
 
 /**
  * 敵の移動処理を担当するドメインサービス
  */
 export class EnemyMovementService {
-  private totalUpdates: number = 0;
-  private enemiesReachedBase: number = 0;
-  private totalSpeedSum: number = 0;
+  private totalUpdates = 0;
+  private enemiesReachedBase = 0;
+  private totalSpeedSum = 0;
 
   /**
    * 敵の移動を更新する
@@ -20,14 +20,14 @@ export class EnemyMovementService {
     }
 
     const wasAtBase = enemy.isAtBase();
-    
+
     // 敵の移動処理を実行
     enemy.move(deltaTime);
-    
+
     // 統計情報を更新
     this.totalUpdates++;
     this.totalSpeedSum += enemy.movementSpeed;
-    
+
     // 基地到達判定
     if (!wasAtBase && enemy.isAtBase()) {
       this.enemiesReachedBase++;
@@ -45,11 +45,7 @@ export class EnemyMovementService {
       return enemy.currentPosition;
     }
 
-    return enemy.movementPath.getNextPosition(
-      enemy.pathProgress,
-      enemy.movementSpeed,
-      deltaTime
-    );
+    return enemy.movementPath.getNextPosition(enemy.pathProgress, enemy.movementSpeed, deltaTime);
   }
 
   /**
@@ -78,10 +74,10 @@ export class EnemyMovementService {
    * @param deltaTime 経過時間（ミリ秒）
    * @param maxUpdatesPerFrame フレームあたりの最大更新数
    */
-  updateEnemiesBatch(enemies: Enemy[], deltaTime: number, maxUpdatesPerFrame: number = 50): void {
-    const aliveEnemies = enemies.filter(enemy => enemy.isAlive);
+  updateEnemiesBatch(enemies: Enemy[], deltaTime: number, maxUpdatesPerFrame = 50): void {
+    const aliveEnemies = enemies.filter((enemy) => enemy.isAlive);
     const updateCount = Math.min(aliveEnemies.length, maxUpdatesPerFrame);
-    
+
     for (let i = 0; i < updateCount; i++) {
       this.updateEnemyMovement(aliveEnemies[i], deltaTime);
     }
@@ -108,8 +104,8 @@ export class EnemyMovementService {
    * @returns 最も近い敵、見つからない場合はnull
    */
   findNearestEnemy(enemies: Enemy[], targetPosition: Position): Enemy | null {
-    const aliveEnemies = enemies.filter(enemy => enemy.isAlive);
-    
+    const aliveEnemies = enemies.filter((enemy) => enemy.isAlive);
+
     if (aliveEnemies.length === 0) {
       return null;
     }
@@ -136,9 +132,8 @@ export class EnemyMovementService {
    * @returns 範囲内の敵の配列
    */
   getEnemiesInRange(enemies: Enemy[], centerPosition: Position, range: number): Enemy[] {
-    return enemies.filter(enemy => 
-      enemy.isAlive && 
-      enemy.currentPosition.distanceTo(centerPosition) <= range
+    return enemies.filter(
+      (enemy) => enemy.isAlive && enemy.currentPosition.distanceTo(centerPosition) <= range
     );
   }
 
@@ -152,11 +147,11 @@ export class EnemyMovementService {
     averageSpeed: number;
   } {
     const averageSpeed = this.totalUpdates > 0 ? this.totalSpeedSum / this.totalUpdates : 0;
-    
+
     return {
       totalUpdates: this.totalUpdates,
       enemiesReachedBase: this.enemiesReachedBase,
-      averageSpeed: Math.round(averageSpeed * 100) / 100 // 小数点以下2桁で丸める
+      averageSpeed: Math.round(averageSpeed * 100) / 100, // 小数点以下2桁で丸める
     };
   }
 
@@ -182,8 +177,8 @@ export class EnemyMovementService {
     slowestEnemy: Enemy | null;
     fastestEnemy: Enemy | null;
   } {
-    const aliveEnemies = enemies.filter(enemy => enemy.isAlive);
-    
+    const aliveEnemies = enemies.filter((enemy) => enemy.isAlive);
+
     if (aliveEnemies.length === 0) {
       return {
         totalEnemies: 0,
@@ -191,12 +186,14 @@ export class EnemyMovementService {
         stuckEnemies: 0,
         averageProgress: 0,
         slowestEnemy: null,
-        fastestEnemy: null
+        fastestEnemy: null,
       };
     }
 
-    const movingEnemies = aliveEnemies.filter(enemy => enemy.pathProgress > 0 && enemy.pathProgress < 1);
-    const stuckEnemies = aliveEnemies.filter(enemy => enemy.pathProgress === 0);
+    const movingEnemies = aliveEnemies.filter(
+      (enemy) => enemy.pathProgress > 0 && enemy.pathProgress < 1
+    );
+    const stuckEnemies = aliveEnemies.filter((enemy) => enemy.pathProgress === 0);
     const totalProgress = aliveEnemies.reduce((sum, enemy) => sum + enemy.pathProgress, 0);
     const averageProgress = totalProgress / aliveEnemies.length;
 
@@ -218,7 +215,7 @@ export class EnemyMovementService {
       stuckEnemies: stuckEnemies.length,
       averageProgress: Math.round(averageProgress * 100) / 100,
       slowestEnemy,
-      fastestEnemy
+      fastestEnemy,
     };
   }
 }

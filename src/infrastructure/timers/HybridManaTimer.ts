@@ -1,4 +1,4 @@
-import { ManaGenerationTimer, TimerResult } from "./ManaGenerationTimer";
+import type { ManaGenerationTimer, TimerResult } from "./ManaGenerationTimer";
 
 export interface GameSessionManager {
   getElapsedGameTime(): number;
@@ -11,7 +11,7 @@ export class HybridManaTimer implements ManaGenerationTimer {
   private callback: (() => void) | null = null;
   private readonly gameSessionManager: GameSessionManager;
 
-  constructor(gameSessionManager: GameSessionManager, intervalMs: number = 100) {
+  constructor(gameSessionManager: GameSessionManager, intervalMs = 100) {
     this.gameSessionManager = gameSessionManager;
     this.intervalMs = intervalMs;
   }
@@ -20,14 +20,14 @@ export class HybridManaTimer implements ManaGenerationTimer {
     if (!callback) {
       return {
         isSuccess: false,
-        error: "コールバックが無効です"
+        error: "コールバックが無効です",
       };
     }
 
     if (this.isRunning()) {
       return {
         isSuccess: false,
-        error: "タイマーは既に開始されています"
+        error: "タイマーは既に開始されています",
       };
     }
 
@@ -57,14 +57,14 @@ export class HybridManaTimer implements ManaGenerationTimer {
     if (intervalMs <= 0) {
       return {
         isSuccess: false,
-        error: "間隔は正の値である必要があります"
+        error: "間隔は正の値である必要があります",
       };
     }
 
     if (this.isRunning()) {
       return {
         isSuccess: false,
-        error: "動作中は間隔を変更できません"
+        error: "動作中は間隔を変更できません",
       };
     }
 

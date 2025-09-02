@@ -1,5 +1,10 @@
-import { ManaTransaction } from "../value-objects/ManaTransaction";
-import { ManaGeneratedEvent, ManaConsumedEvent, ManaCapReachedEvent, DomainEvent } from "../events/ManaEvents";
+import {
+  type DomainEvent,
+  ManaCapReachedEvent,
+  ManaConsumedEvent,
+  ManaGeneratedEvent,
+} from "../events/ManaEvents";
+import type { ManaTransaction } from "../value-objects/ManaTransaction";
 
 export interface ManaOperationResult {
   isSuccess: boolean;
@@ -24,11 +29,11 @@ export class ManaPool {
     if (initialMana < 0) {
       throw new Error("魔力値は0以上である必要があります");
     }
-    
+
     if (maxMana < 1) {
       throw new Error("魔力上限は1以上である必要があります");
     }
-    
+
     if (initialMana > maxMana) {
       throw new Error("初期魔力が上限を超えています");
     }
@@ -54,7 +59,7 @@ export class ManaPool {
     if (!transaction.isGeneration()) {
       return {
         isSuccess: false,
-        error: "生成トランザクションではありません"
+        error: "生成トランザクションではありません",
       };
     }
 
@@ -62,7 +67,7 @@ export class ManaPool {
     if (amount <= 0) {
       return {
         isSuccess: false,
-        error: "生成量は正の値である必要があります"
+        error: "生成量は正の値である必要があります",
       };
     }
 
@@ -90,7 +95,7 @@ export class ManaPool {
 
     return {
       isSuccess: true,
-      actualAmount
+      actualAmount,
     };
   }
 
@@ -98,7 +103,7 @@ export class ManaPool {
     if (!transaction.isConsumption()) {
       return {
         isSuccess: false,
-        error: "消費トランザクションではありません"
+        error: "消費トランザクションではありません",
       };
     }
 
@@ -106,14 +111,14 @@ export class ManaPool {
     if (amount <= 0) {
       return {
         isSuccess: false,
-        error: "消費量は正の値である必要があります"
+        error: "消費量は正の値である必要があります",
       };
     }
 
     if (!this.canConsume(amount)) {
       return {
         isSuccess: false,
-        error: "魔力が不足しています"
+        error: "魔力が不足しています",
       };
     }
 
@@ -132,7 +137,7 @@ export class ManaPool {
 
     return {
       isSuccess: true,
-      actualAmount: amount
+      actualAmount: amount,
     };
   }
 
@@ -149,7 +154,7 @@ export class ManaPool {
       current: this.currentMana,
       max: this.maxMana,
       percentage: (this.currentMana / this.maxMana) * 100,
-      isAtMax: this.isAtMaxCapacity()
+      isAtMax: this.isAtMaxCapacity(),
     };
   }
 

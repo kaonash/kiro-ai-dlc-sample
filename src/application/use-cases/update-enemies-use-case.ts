@@ -1,7 +1,8 @@
-import { WaveScheduler } from '../../domain/entities/wave-scheduler';
-import { EnemyMovementService } from '../../domain/services/enemy-movement-service';
-import { BaseAttackService } from '../../domain/services/base-attack-service';
-import { Position } from '../../domain/value-objects/position';
+import type { WaveScheduler } from "../../domain/entities/wave-scheduler";
+import type { BaseAttackService } from "../../domain/services/base-attack-service";
+import type { EnemyMovementService } from "../../domain/services/enemy-movement-service";
+import type { MovementPath } from "../../domain/value-objects/movement-path";
+import type { Position } from "../../domain/value-objects/position";
 
 /**
  * ゲームセッションサービスのインターフェース
@@ -76,11 +77,11 @@ export interface UpdateValidation {
  * 敵更新ユースケース
  */
 export class UpdateEnemiesUseCase {
-  private updateCount: number = 0;
-  private totalUpdateTime: number = 0;
-  private totalEnemiesProcessed: number = 0;
-  private totalBaseDamage: number = 0;
-  private totalEnemiesDestroyed: number = 0;
+  private updateCount = 0;
+  private totalUpdateTime = 0;
+  private totalEnemiesProcessed = 0;
+  private totalBaseDamage = 0;
+  private totalEnemiesDestroyed = 0;
   private updateTimes: number[] = [];
 
   constructor(
@@ -97,9 +98,13 @@ export class UpdateEnemiesUseCase {
    * @param movementPath 移動パス（敵生成用）
    * @returns 更新結果
    */
-  async execute(waveScheduler: WaveScheduler, deltaTime: number, movementPath?: any): Promise<UpdateEnemiesResult> {
+  async execute(
+    waveScheduler: WaveScheduler,
+    deltaTime: number,
+    movementPath?: MovementPath
+  ): Promise<UpdateEnemiesResult> {
     const startTime = Date.now();
-    
+
     try {
       // 前提条件をチェック
       if (!this.gameSessionService.isGameActive()) {
@@ -110,7 +115,7 @@ export class UpdateEnemiesUseCase {
           baseDamage: 0,
           enemiesDestroyed: 0,
           updateTime: 0,
-          error: 'ゲームがアクティブではありません'
+          error: "ゲームがアクティブではありません",
         };
       }
 
@@ -120,15 +125,36 @@ export class UpdateEnemiesUseCase {
 
       // 波スケジューラーを更新（新しい敵の生成を含む）
       const currentTime = new Date(this.gameSessionService.getGameTime());
-      
+      const currentWave = waveScheduler.currentWave;
+
+      // 生成前の敵数を記録
+      const initialSpawnedCount = currentWave ? currentWave.spawnedCount : 0;
+
       // WaveScheduler の update メソッドを呼び出して敵生成を処理
       if (movementPath) {
         waveScheduler.update(currentTime, movementPath);
       }
 
+      // 新しく生成された敵数を計算
+      const finalSpawnedCount = currentWave ? currentWave.spawnedCount : 0;
+      newEnemiesSpawned = finalSpawnedCount - initialSpawnedCount;
+
+      // 新しく生成された敵をUIに表示
+      if (newEnemiesSpawned > 0 && currentWave) {
+        const allEnemies = currentWave.enemies;
+        const newEnemies = allEnemies.slice(-newEnemiesSpawned);
+        for (const enemy of newEnemies) {
+          try {
+            this.uiFeedbackService.displayEnemy(enemy);
+          } catch (error) {
+            console.warn("Failed to display new enemy:", error);
+          }
+        }
+      }
+
       // アクティブな敵を取得
       const activeEnemies = waveScheduler.getAllActiveEnemies();
-      
+
       // 敵の移動を更新
       for (const enemy of activeEnemies) {
         if (enemy.isAlive) {
@@ -143,7 +169,7 @@ export class UpdateEnemiesUseCase {
             }
             this.uiFeedbackService.updateEnemyHealth(enemy.id, enemy.getHealthPercentage());
           } catch (error) {
-            console.warn('Failed to update enemy UI:', error);
+            console.warn("Failed to update enemy UI:", error);
           }
         }
       }
@@ -155,13 +181,13 @@ export class UpdateEnemiesUseCase {
       }
 
       // 死亡した敵をUIから除去
-      const deadEnemies = activeEnemies.filter(enemy => !enemy.isAlive);
+      const deadEnemies = activeEnemies.filter((enemy) => !enemy.isAlive);
       for (const enemy of deadEnemies) {
         try {
           this.uiFeedbackService.removeEnemyDisplay(enemy.id);
           enemiesDestroyed++;
         } catch (error) {
-          console.warn('Failed to remove enemy from UI:', error);
+          console.warn("Failed to remove enemy from UI:", error);
         }
       }
 
@@ -175,7 +201,7 @@ export class UpdateEnemiesUseCase {
         newEnemiesSpawned,
         baseDamage,
         enemiesDestroyed,
-        updateTime
+        updateTime,
       };
     } catch (error) {
       return {
@@ -185,7 +211,7 @@ export class UpdateEnemiesUseCase {
         baseDamage: 0,
         enemiesDestroyed: 0,
         updateTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : '予期しないエラーが発生しました'
+        error: error instanceof Error ? error.message : "予期しないエラーが発生しました",
       };
     }
   }
@@ -198,12 +224,12 @@ export class UpdateEnemiesUseCase {
    * @returns 更新結果
    */
   async optimizeUpdate(
-    waveScheduler: WaveScheduler, 
-    deltaTime: number, 
-    maxUpdates: number = 50
+    waveScheduler: WaveScheduler,
+    deltaTime: number,
+    maxUpdates = 50
   ): Promise<UpdateEnemiesResult> {
     const startTime = Date.now();
-    
+
     try {
       if (!this.gameSessionService.isGameActive()) {
         return {
@@ -213,15 +239,15 @@ export class UpdateEnemiesUseCase {
           baseDamage: 0,
           enemiesDestroyed: 0,
           updateTime: 0,
-          error: 'ゲームがアクティブではありません'
+          error: "ゲームがアクティブではありません",
         };
       }
 
       const activeEnemies = waveScheduler.getAllActiveEnemies();
       const enemiesToUpdate = activeEnemies.slice(0, maxUpdates);
-      
+
       let updatedEnemies = 0;
-      let enemiesDestroyed = 0;
+      const enemiesDestroyed = 0;
 
       // 制限された数の敵のみ更新
       for (const enemy of enemiesToUpdate) {
@@ -233,7 +259,7 @@ export class UpdateEnemiesUseCase {
             this.uiFeedbackService.updateEnemyPosition(enemy.id, enemy.currentPosition);
             this.uiFeedbackService.updateEnemyHealth(enemy.id, enemy.getHealthPercentage());
           } catch (error) {
-            console.warn('Failed to update enemy UI:', error);
+            console.warn("Failed to update enemy UI:", error);
           }
         }
       }
@@ -253,7 +279,7 @@ export class UpdateEnemiesUseCase {
         newEnemiesSpawned: 0,
         baseDamage,
         enemiesDestroyed,
-        updateTime
+        updateTime,
       };
     } catch (error) {
       return {
@@ -263,7 +289,7 @@ export class UpdateEnemiesUseCase {
         baseDamage: 0,
         enemiesDestroyed: 0,
         updateTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : '予期しないエラーが発生しました'
+        error: error instanceof Error ? error.message : "予期しないエラーが発生しました",
       };
     }
   }
@@ -274,8 +300,9 @@ export class UpdateEnemiesUseCase {
    */
   async getUpdateStatistics(): Promise<UpdateStatistics> {
     const averageUpdateTime = this.updateCount > 0 ? this.totalUpdateTime / this.updateCount : 0;
-    const averageEnemiesPerUpdate = this.updateCount > 0 ? this.totalEnemiesProcessed / this.updateCount : 0;
-    
+    const averageEnemiesPerUpdate =
+      this.updateCount > 0 ? this.totalEnemiesProcessed / this.updateCount : 0;
+
     const minUpdateTime = this.updateTimes.length > 0 ? Math.min(...this.updateTimes) : 0;
     const maxUpdateTime = this.updateTimes.length > 0 ? Math.max(...this.updateTimes) : 0;
 
@@ -288,8 +315,8 @@ export class UpdateEnemiesUseCase {
       performanceMetrics: {
         minUpdateTime,
         maxUpdateTime,
-        averageEnemiesPerUpdate: Math.round(averageEnemiesPerUpdate * 100) / 100
-      }
+        averageEnemiesPerUpdate: Math.round(averageEnemiesPerUpdate * 100) / 100,
+      },
     };
   }
 
@@ -301,27 +328,29 @@ export class UpdateEnemiesUseCase {
   async predictNextUpdate(waveScheduler: WaveScheduler): Promise<UpdatePrediction> {
     const activeEnemies = waveScheduler.getAllActiveEnemies();
     const estimatedEnemies = activeEnemies.length;
-    
+
     // 過去の統計に基づいて更新時間を予測
     const stats = await this.getUpdateStatistics();
-    const estimatedUpdateTime = stats.averageUpdateTime * (estimatedEnemies / Math.max(1, stats.performanceMetrics.averageEnemiesPerUpdate));
-    
+    const estimatedUpdateTime =
+      stats.averageUpdateTime *
+      (estimatedEnemies / Math.max(1, stats.performanceMetrics.averageEnemiesPerUpdate));
+
     // 推奨デルタタイム（60FPS基準）
     const recommendedDeltaTime = 16; // 16ms ≈ 60FPS
-    
+
     const performanceWarnings: string[] = [];
     if (estimatedUpdateTime > 16) {
-      performanceWarnings.push('更新時間が16msを超える可能性があります');
+      performanceWarnings.push("更新時間が16msを超える可能性があります");
     }
     if (estimatedEnemies > 100) {
-      performanceWarnings.push('敵数が多すぎる可能性があります');
+      performanceWarnings.push("敵数が多すぎる可能性があります");
     }
 
     return {
       estimatedEnemies,
       estimatedUpdateTime: Math.round(estimatedUpdateTime * 100) / 100,
       recommendedDeltaTime,
-      performanceWarnings
+      performanceWarnings,
     };
   }
 
@@ -336,28 +365,28 @@ export class UpdateEnemiesUseCase {
 
     // 基本的な前提条件
     if (!this.gameSessionService.isGameActive()) {
-      errors.push('ゲームがアクティブではありません');
+      errors.push("ゲームがアクティブではありません");
     }
 
     if (this.gameSessionService.getPlayerHealth() <= 0) {
-      errors.push('プレイヤーの体力が0です');
+      errors.push("プレイヤーの体力が0です");
     }
 
     // パフォーマンス警告
     const activeEnemies = waveScheduler.getAllActiveEnemies();
     if (activeEnemies.length > 50) {
-      warnings.push('敵数が多いためパフォーマンスに影響する可能性があります');
+      warnings.push("敵数が多いためパフォーマンスに影響する可能性があります");
     }
 
     const stats = await this.getUpdateStatistics();
     if (stats.performanceMetrics.maxUpdateTime > 33) {
-      warnings.push('更新時間が長すぎる可能性があります（30FPS以下）');
+      warnings.push("更新時間が長すぎる可能性があります（30FPS以下）");
     }
 
     return {
       canUpdate: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -369,9 +398,9 @@ export class UpdateEnemiesUseCase {
    * @param updateTime 更新時間
    */
   private updateStatistics(
-    enemiesProcessed: number, 
-    baseDamage: number, 
-    enemiesDestroyed: number, 
+    enemiesProcessed: number,
+    baseDamage: number,
+    enemiesDestroyed: number,
     updateTime: number
   ): void {
     this.updateCount++;
@@ -379,7 +408,7 @@ export class UpdateEnemiesUseCase {
     this.totalEnemiesProcessed += enemiesProcessed;
     this.totalBaseDamage += baseDamage;
     this.totalEnemiesDestroyed += enemiesDestroyed;
-    
+
     // 最新の100回分の更新時間を保持
     this.updateTimes.push(updateTime);
     if (this.updateTimes.length > 100) {

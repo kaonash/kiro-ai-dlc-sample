@@ -1,4 +1,4 @@
-import { Position } from './position';
+import type { Position } from "./position";
 
 /**
  * 敵の移動経路を表現する値オブジェクト
@@ -10,7 +10,7 @@ export class MovementPath {
 
   constructor(public readonly pathPoints: Position[]) {
     if (pathPoints.length < 2) {
-      throw new Error('Path must have at least 2 points');
+      throw new Error("Path must have at least 2 points");
     }
 
     this.spawnPoint = pathPoints[0];
@@ -48,7 +48,7 @@ export class MovementPath {
 
     // 目標距離を計算
     const targetDistance = this.totalLength * progress;
-    
+
     // どのセグメントに位置するかを特定
     let currentDistance = 0;
     for (let i = 1; i < this.pathPoints.length; i++) {
@@ -80,16 +80,16 @@ export class MovementPath {
   getNextPosition(currentProgress: number, speed: number, deltaTime: number): Position {
     // 移動距離を計算（ミリ秒を秒に変換）
     const moveDistance = speed * (deltaTime / 1000);
-    
+
     // 現在の距離を計算
     const currentDistance = this.totalLength * currentProgress;
-    
+
     // 新しい距離を計算
     const newDistance = currentDistance + moveDistance;
-    
+
     // 新しい進行度を計算
     const newProgress = this.getProgressFromDistance(newDistance);
-    
+
     return this.getPositionAtProgress(newProgress);
   }
 
@@ -100,9 +100,9 @@ export class MovementPath {
    */
   getTotalTravelTime(speed: number): number {
     if (speed <= 0) {
-      throw new Error('Speed must be positive');
+      throw new Error("Speed must be positive");
     }
-    
+
     return (this.totalLength / speed) * 1000; // 秒をミリ秒に変換
   }
 

@@ -1,13 +1,13 @@
-import { Enemy } from '../entities/enemy';
-import { EnemyType } from '../value-objects/enemy-type';
+import type { Enemy } from "../entities/enemy";
+import type { EnemyType } from "../value-objects/enemy-type";
 
 /**
  * 基地攻撃処理を担当するドメインサービス
  */
 export class BaseAttackService {
-  private damageMultiplier: number = 1.0;
-  private totalAttacks: number = 0;
-  private totalDamageDealt: number = 0;
+  private damageMultiplier = 1.0;
+  private totalAttacks = 0;
+  private totalDamageDealt = 0;
   private attacksByType: Map<EnemyType, number> = new Map();
 
   /**
@@ -17,18 +17,16 @@ export class BaseAttackService {
    */
   processBaseAttacks(enemies: Enemy[]): number {
     let totalDamage = 0;
-    
-    const enemiesAtBase = enemies.filter(enemy => 
-      enemy.isAlive && enemy.isAtBase()
-    );
+
+    const enemiesAtBase = enemies.filter((enemy) => enemy.isAlive && enemy.isAtBase());
 
     for (const enemy of enemiesAtBase) {
       const damage = this.calculateBaseDamage(enemy);
       totalDamage += damage;
-      
+
       // 統計情報を更新
       this.updateAttackStatistics(enemy, damage);
-      
+
       // 敵を基地攻撃後に除去
       this.removeEnemyAfterAttack(enemy);
     }
@@ -66,7 +64,7 @@ export class BaseAttackService {
   private updateAttackStatistics(enemy: Enemy, damage: number): void {
     this.totalAttacks++;
     this.totalDamageDealt += damage;
-    
+
     const currentCount = this.attacksByType.get(enemy.type) || 0;
     this.attacksByType.set(enemy.type, currentCount + 1);
   }
@@ -77,7 +75,7 @@ export class BaseAttackService {
    * @returns 各グループの攻撃ダメージの配列
    */
   processMultipleBaseAttacks(enemyGroups: Enemy[][]): number[] {
-    return enemyGroups.map(enemies => this.processBaseAttacks(enemies));
+    return enemyGroups.map((enemies) => this.processBaseAttacks(enemies));
   }
 
   /**
@@ -87,10 +85,8 @@ export class BaseAttackService {
    */
   predictBaseDamage(enemies: Enemy[]): number {
     let totalPredictedDamage = 0;
-    
-    const enemiesAtBase = enemies.filter(enemy => 
-      enemy.isAlive && enemy.isAtBase()
-    );
+
+    const enemiesAtBase = enemies.filter((enemy) => enemy.isAlive && enemy.isAtBase());
 
     for (const enemy of enemiesAtBase) {
       totalPredictedDamage += this.calculateBaseDamage(enemy);
@@ -105,28 +101,28 @@ export class BaseAttackService {
    * @returns 脅威レベル（0-10）
    */
   evaluateThreatLevel(enemies: Enemy[]): number {
-    const aliveEnemies = enemies.filter(enemy => enemy.isAlive);
-    
+    const aliveEnemies = enemies.filter((enemy) => enemy.isAlive);
+
     if (aliveEnemies.length === 0) {
       return 0;
     }
 
-    const enemiesAtBase = aliveEnemies.filter(enemy => enemy.isAtBase());
-    const enemiesNearBase = aliveEnemies.filter(enemy => 
-      enemy.pathProgress > 0.8 && !enemy.isAtBase()
+    const enemiesAtBase = aliveEnemies.filter((enemy) => enemy.isAtBase());
+    const enemiesNearBase = aliveEnemies.filter(
+      (enemy) => enemy.pathProgress > 0.8 && !enemy.isAtBase()
     );
 
     // 基地にいる敵は最高脅威
     let threatScore = enemiesAtBase.length * 3;
-    
+
     // 基地近くの敵は中程度の脅威
     threatScore += enemiesNearBase.length * 2;
-    
+
     // その他の敵は低脅威
     threatScore += (aliveEnemies.length - enemiesAtBase.length - enemiesNearBase.length) * 1;
 
     // 0-10の範囲にスケール
-    return Math.min(10, Math.round(threatScore / aliveEnemies.length * 2));
+    return Math.min(10, Math.round((threatScore / aliveEnemies.length) * 2));
   }
 
   /**
@@ -135,7 +131,7 @@ export class BaseAttackService {
    */
   setDamageMultiplier(multiplier: number): void {
     if (multiplier < 0) {
-      throw new Error('Damage multiplier must be non-negative');
+      throw new Error("Damage multiplier must be non-negative");
     }
     this.damageMultiplier = multiplier;
   }
@@ -158,15 +154,16 @@ export class BaseAttackService {
     attacksByType: Map<EnemyType, number>;
     averageDamagePerAttack: number;
   } {
-    const averageDamagePerAttack = this.totalAttacks > 0 
-      ? Math.round((this.totalDamageDealt / this.totalAttacks) * 100) / 100
-      : 0;
+    const averageDamagePerAttack =
+      this.totalAttacks > 0
+        ? Math.round((this.totalDamageDealt / this.totalAttacks) * 100) / 100
+        : 0;
 
     return {
       totalAttacks: this.totalAttacks,
       totalDamageDealt: this.totalDamageDealt,
       attacksByType: new Map(this.attacksByType),
-      averageDamagePerAttack
+      averageDamagePerAttack,
     };
   }
 
@@ -209,7 +206,7 @@ export class BaseAttackService {
         attackCount,
         totalDamage,
         averageDamage: Math.round(averageDamage * 100) / 100,
-        efficiency: Math.round(efficiency * 100) / 100
+        efficiency: Math.round(efficiency * 100) / 100,
       });
     }
 
@@ -222,17 +219,17 @@ export class BaseAttackService {
    * @returns 防御推奨事項
    */
   generateDefenseRecommendations(enemies: Enemy[]): {
-    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
     recommendations: string[];
     estimatedDamage: number;
     timeToImpact: number; // 最初の敵が基地に到達するまでの時間（ミリ秒）
   } {
-    const aliveEnemies = enemies.filter(enemy => enemy.isAlive);
-    const enemiesAtBase = aliveEnemies.filter(enemy => enemy.isAtBase());
+    const aliveEnemies = enemies.filter((enemy) => enemy.isAlive);
+    const enemiesAtBase = aliveEnemies.filter((enemy) => enemy.isAtBase());
     const estimatedDamage = this.predictBaseDamage(enemies);
-    
+
     // 最も基地に近い敵の到達時間を計算
-    let timeToImpact = Infinity;
+    let timeToImpact = Number.POSITIVE_INFINITY;
     for (const enemy of aliveEnemies) {
       if (!enemy.isAtBase()) {
         const remainingDistance = enemy.movementPath.totalLength * (1 - enemy.pathProgress);
@@ -241,38 +238,38 @@ export class BaseAttackService {
       }
     }
 
-    if (timeToImpact === Infinity) {
+    if (timeToImpact === Number.POSITIVE_INFINITY) {
       timeToImpact = 0;
     }
 
     const recommendations: string[] = [];
-    let priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = 'LOW';
+    let priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
 
     if (enemiesAtBase.length > 0) {
-      priority = 'CRITICAL';
-      recommendations.push('敵が基地を攻撃中！即座に対処が必要');
+      priority = "CRITICAL";
+      recommendations.push("敵が基地を攻撃中！即座に対処が必要");
     } else if (estimatedDamage > 200) {
-      priority = 'HIGH';
-      recommendations.push('高ダメージの敵が接近中');
-      recommendations.push('強力な防御手段を準備');
+      priority = "HIGH";
+      recommendations.push("高ダメージの敵が接近中");
+      recommendations.push("強力な防御手段を準備");
     } else if (estimatedDamage > 100) {
-      priority = 'MEDIUM';
-      recommendations.push('中程度の脅威が検出');
-      recommendations.push('防御態勢を整える');
+      priority = "MEDIUM";
+      recommendations.push("中程度の脅威が検出");
+      recommendations.push("防御態勢を整える");
     } else if (aliveEnemies.length > 0) {
-      priority = 'LOW';
-      recommendations.push('軽微な脅威を監視中');
+      priority = "LOW";
+      recommendations.push("軽微な脅威を監視中");
     }
 
     if (timeToImpact < 5000 && timeToImpact > 0) {
-      recommendations.push('5秒以内に敵が到達予定');
+      recommendations.push("5秒以内に敵が到達予定");
     }
 
     return {
       priority,
       recommendations,
       estimatedDamage,
-      timeToImpact: Math.round(timeToImpact)
+      timeToImpact: Math.round(timeToImpact),
     };
   }
 }

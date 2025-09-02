@@ -1,14 +1,14 @@
-import { Enemy } from '../entities/enemy';
-import { EnemyType } from '../value-objects/enemy-type';
-import { Position } from '../value-objects/position';
+import type { Enemy } from "../entities/enemy";
+import type { EnemyType } from "../value-objects/enemy-type";
+import type { Position } from "../value-objects/position";
 
 /**
  * 敵へのダメージ処理を担当するドメインサービス
  */
 export class EnemyDamageService {
-  private damageMultiplier: number = 1.0;
-  private totalDamageDealt: number = 0;
-  private enemiesDestroyed: number = 0;
+  private damageMultiplier = 1.0;
+  private totalDamageDealt = 0;
+  private enemiesDestroyed = 0;
   private damageByType: Map<EnemyType, number> = new Map();
 
   /**
@@ -24,18 +24,18 @@ export class EnemyDamageService {
 
     const actualDamage = this.calculateDamageWithMultiplier(damage);
     const wasAlive = enemy.isAlive;
-    
+
     enemy.takeDamage(actualDamage);
-    
+
     // 統計情報を更新
     this.updateDamageStatistics(enemy.type, actualDamage);
-    
+
     // 敵が破壊されたかチェック
     const isDestroyed = wasAlive && !enemy.isAlive;
     if (isDestroyed) {
       this.enemiesDestroyed++;
     }
-    
+
     return isDestroyed;
   }
 
@@ -75,12 +75,16 @@ export class EnemyDamageService {
    * @param damage ダメージ量
    * @returns 破壊された敵の配列
    */
-  applyAreaDamage(enemies: Enemy[], centerPosition: Position, range: number, damage: number): Enemy[] {
+  applyAreaDamage(
+    enemies: Enemy[],
+    centerPosition: Position,
+    range: number,
+    damage: number
+  ): Enemy[] {
     const destroyedEnemies: Enemy[] = [];
-    
-    const enemiesInRange = enemies.filter(enemy => 
-      enemy.isAlive && 
-      enemy.currentPosition.distanceTo(centerPosition) <= range
+
+    const enemiesInRange = enemies.filter(
+      (enemy) => enemy.isAlive && enemy.currentPosition.distanceTo(centerPosition) <= range
     );
 
     for (const enemy of enemiesInRange) {
@@ -100,7 +104,7 @@ export class EnemyDamageService {
    */
   applyMultipleDamage(damageTargets: Array<{ enemy: Enemy; damage: number }>): Enemy[] {
     const destroyedEnemies: Enemy[] = [];
-    
+
     for (const { enemy, damage } of damageTargets) {
       const isDestroyed = this.applyDamage(enemy, damage);
       if (isDestroyed) {
@@ -120,7 +124,7 @@ export class EnemyDamageService {
     if (!enemy.isAlive) {
       return 0;
     }
-    
+
     // 倍率を考慮した必要ダメージを逆算
     return Math.ceil(enemy.currentHealth / this.damageMultiplier);
   }
@@ -132,7 +136,7 @@ export class EnemyDamageService {
    */
   private updateDamageStatistics(enemyType: EnemyType, damage: number): void {
     this.totalDamageDealt += damage;
-    
+
     const currentDamage = this.damageByType.get(enemyType) || 0;
     this.damageByType.set(enemyType, currentDamage + damage);
   }
@@ -148,14 +152,14 @@ export class EnemyDamageService {
     averageHealthPercentage: number;
     criticalHealthEnemies: Enemy[]; // 体力20%以下
   } {
-    const aliveEnemies = enemies.filter(enemy => enemy.isAlive);
-    
+    const aliveEnemies = enemies.filter((enemy) => enemy.isAlive);
+
     if (aliveEnemies.length === 0) {
       return {
         mostVulnerable: null,
         leastVulnerable: null,
         averageHealthPercentage: 0,
-        criticalHealthEnemies: []
+        criticalHealthEnemies: [],
       };
     }
 
@@ -176,15 +180,15 @@ export class EnemyDamageService {
     }
 
     const averageHealthPercentage = totalHealthPercentage / aliveEnemies.length;
-    const criticalHealthEnemies = aliveEnemies.filter(enemy => 
-      enemy.getHealthPercentage() <= 0.2
+    const criticalHealthEnemies = aliveEnemies.filter(
+      (enemy) => enemy.getHealthPercentage() <= 0.2
     );
 
     return {
       mostVulnerable,
       leastVulnerable,
       averageHealthPercentage: Math.round(averageHealthPercentage * 100) / 100,
-      criticalHealthEnemies
+      criticalHealthEnemies,
     };
   }
 
@@ -194,7 +198,7 @@ export class EnemyDamageService {
    */
   setDamageMultiplier(multiplier: number): void {
     if (multiplier < 0) {
-      throw new Error('Damage multiplier must be non-negative');
+      throw new Error("Damage multiplier must be non-negative");
     }
     this.damageMultiplier = multiplier;
   }
@@ -218,23 +222,26 @@ export class EnemyDamageService {
     averageDamagePerEnemy: number;
     destructionRate: number;
   } {
-    const totalEnemiesEngaged = this.enemiesDestroyed + 
+    const totalEnemiesEngaged =
+      this.enemiesDestroyed +
       Array.from(this.damageByType.values()).reduce((sum, damage) => sum + (damage > 0 ? 1 : 0), 0);
-    
-    const averageDamagePerEnemy = totalEnemiesEngaged > 0 
-      ? Math.round((this.totalDamageDealt / totalEnemiesEngaged) * 100) / 100
-      : 0;
-    
-    const destructionRate = totalEnemiesEngaged > 0
-      ? Math.round((this.enemiesDestroyed / totalEnemiesEngaged) * 100) / 100
-      : 0;
+
+    const averageDamagePerEnemy =
+      totalEnemiesEngaged > 0
+        ? Math.round((this.totalDamageDealt / totalEnemiesEngaged) * 100) / 100
+        : 0;
+
+    const destructionRate =
+      totalEnemiesEngaged > 0
+        ? Math.round((this.enemiesDestroyed / totalEnemiesEngaged) * 100) / 100
+        : 0;
 
     return {
       totalDamageDealt: this.totalDamageDealt,
       enemiesDestroyed: this.enemiesDestroyed,
       damageByType: new Map(this.damageByType),
       averageDamagePerEnemy,
-      destructionRate
+      destructionRate,
     };
   }
 
@@ -256,28 +263,28 @@ export class EnemyDamageService {
     totalDamageDealt: number;
     averageDamagePerHit: number;
     damageToHealthRatio: number;
-    efficiency: 'HIGH' | 'MEDIUM' | 'LOW';
+    efficiency: "HIGH" | "MEDIUM" | "LOW";
   }> {
     const results: Array<{
       enemyType: EnemyType;
       totalDamageDealt: number;
       averageDamagePerHit: number;
       damageToHealthRatio: number;
-      efficiency: 'HIGH' | 'MEDIUM' | 'LOW';
+      efficiency: "HIGH" | "MEDIUM" | "LOW";
     }> = [];
 
     for (const [enemyType, totalDamage] of this.damageByType.entries()) {
       const enemyMaxHealth = enemyType.getBaseStats().health;
       const averageDamagePerHit = totalDamage; // 簡略化：1回の攻撃と仮定
       const damageToHealthRatio = totalDamage / enemyMaxHealth;
-      
-      let efficiency: 'HIGH' | 'MEDIUM' | 'LOW';
+
+      let efficiency: "HIGH" | "MEDIUM" | "LOW";
       if (damageToHealthRatio >= 1.0) {
-        efficiency = 'HIGH';
+        efficiency = "HIGH";
       } else if (damageToHealthRatio >= 0.5) {
-        efficiency = 'MEDIUM';
+        efficiency = "MEDIUM";
       } else {
-        efficiency = 'LOW';
+        efficiency = "LOW";
       }
 
       results.push({
@@ -285,7 +292,7 @@ export class EnemyDamageService {
         totalDamageDealt: totalDamage,
         averageDamagePerHit: Math.round(averageDamagePerHit * 100) / 100,
         damageToHealthRatio: Math.round(damageToHealthRatio * 100) / 100,
-        efficiency
+        efficiency,
       });
     }
 
@@ -298,50 +305,51 @@ export class EnemyDamageService {
    * @param availableDamage 利用可能なダメージ
    * @returns 推奨攻撃対象
    */
-  recommendAttackTarget(enemies: Enemy[], availableDamage: number): {
+  recommendAttackTarget(
+    enemies: Enemy[],
+    availableDamage: number
+  ): {
     primaryTarget: Enemy | null;
     alternativeTargets: Enemy[];
     reasoning: string;
   } {
-    const aliveEnemies = enemies.filter(enemy => enemy.isAlive);
-    
+    const aliveEnemies = enemies.filter((enemy) => enemy.isAlive);
+
     if (aliveEnemies.length === 0) {
       return {
         primaryTarget: null,
         alternativeTargets: [],
-        reasoning: '攻撃可能な敵がいません'
+        reasoning: "攻撃可能な敵がいません",
       };
     }
 
     const actualDamage = this.calculateDamageWithMultiplier(availableDamage);
-    
+
     // 一撃で倒せる敵を優先
-    const killableEnemies = aliveEnemies.filter(enemy => 
-      enemy.currentHealth <= actualDamage
-    );
+    const killableEnemies = aliveEnemies.filter((enemy) => enemy.currentHealth <= actualDamage);
 
     if (killableEnemies.length > 0) {
       // 最も価値の高い（攻撃力の高い）敵を選択
-      const primaryTarget = killableEnemies.reduce((prev, current) => 
+      const primaryTarget = killableEnemies.reduce((prev, current) =>
         current.attackPower > prev.attackPower ? current : prev
       );
-      
+
       return {
         primaryTarget,
-        alternativeTargets: killableEnemies.filter(e => e !== primaryTarget),
-        reasoning: '一撃で倒せる敵の中で最も攻撃力が高い敵を推奨'
+        alternativeTargets: killableEnemies.filter((e) => e !== primaryTarget),
+        reasoning: "一撃で倒せる敵の中で最も攻撃力が高い敵を推奨",
       };
     }
 
     // 一撃で倒せない場合は、最も体力の少ない敵を推奨
-    const weakestEnemy = aliveEnemies.reduce((prev, current) => 
+    const weakestEnemy = aliveEnemies.reduce((prev, current) =>
       current.currentHealth < prev.currentHealth ? current : prev
     );
 
     return {
       primaryTarget: weakestEnemy,
-      alternativeTargets: aliveEnemies.filter(e => e !== weakestEnemy).slice(0, 3),
-      reasoning: '最も体力の少ない敵を推奨（継続ダメージで撃破を狙う）'
+      alternativeTargets: aliveEnemies.filter((e) => e !== weakestEnemy).slice(0, 3),
+      reasoning: "最も体力の少ない敵を推奨（継続ダメージで撃破を狙う）",
     };
   }
 }

@@ -1,7 +1,7 @@
-import { Enemy } from './enemy';
-import { EnemyType } from '../value-objects/enemy-type';
-import { WaveConfiguration } from '../value-objects/wave-configuration';
-import { MovementPath } from '../value-objects/movement-path';
+import type { EnemyType } from "../value-objects/enemy-type";
+import type { MovementPath } from "../value-objects/movement-path";
+import type { WaveConfiguration } from "../value-objects/wave-configuration";
+import { Enemy } from "./enemy";
 
 /**
  * 一つの波に含まれる敵群を管理するエンティティ
@@ -9,13 +9,13 @@ import { MovementPath } from '../value-objects/movement-path';
 export class EnemyWave {
   public readonly totalEnemyCount: number;
   public readonly spawnInterval: number;
-  
+
   private _enemies: Enemy[] = [];
-  private _spawnedCount: number = 0;
+  private _spawnedCount = 0;
   private _lastSpawnTime: Date;
-  private _isComplete: boolean = false;
+  private _isComplete = false;
   private _enemyTypes: EnemyType[];
-  private _nextEnemyIndex: number = 0;
+  private _nextEnemyIndex = 0;
 
   constructor(
     public readonly waveNumber: number,
@@ -76,7 +76,7 @@ export class EnemyWave {
 
     // 敵タイプを決定
     const enemyType = this._enemyTypes[this._nextEnemyIndex];
-    
+
     // 敵を生成
     const enemyId = `wave-${this.waveNumber}-enemy-${this._spawnedCount + 1}`;
     const enemy = new Enemy(enemyId, enemyType, movementPath, new Date());
@@ -95,7 +95,7 @@ export class EnemyWave {
    * @returns 生存している敵の配列
    */
   getAllAliveEnemies(): Enemy[] {
-    return this._enemies.filter(enemy => enemy.isAlive);
+    return this._enemies.filter((enemy) => enemy.isAlive);
   }
 
   /**
@@ -110,9 +110,7 @@ export class EnemyWave {
     }
 
     // すべての敵が死亡または基地到達している場合は完了
-    const allEnemiesGone = this._enemies.every(enemy => 
-      !enemy.isAlive || enemy.isAtBase()
-    );
+    const allEnemiesGone = this._enemies.every((enemy) => !enemy.isAlive || enemy.isAtBase());
 
     this._isComplete = allEnemiesGone;
     return this._isComplete;
@@ -126,7 +124,7 @@ export class EnemyWave {
     if (this.totalEnemyCount === 0) {
       return 1;
     }
-    
+
     return this._spawnedCount / this.totalEnemyCount;
   }
 
@@ -134,14 +132,14 @@ export class EnemyWave {
    * 死亡した敵を波から除去する
    */
   removeDeadEnemies(): void {
-    this._enemies = this._enemies.filter(enemy => enemy.isAlive);
+    this._enemies = this._enemies.filter((enemy) => enemy.isAlive);
   }
 
   /**
    * 基地に到達した敵を波から除去する
    */
   removeEnemiesAtBase(): void {
-    this._enemies = this._enemies.filter(enemy => !enemy.isAtBase());
+    this._enemies = this._enemies.filter((enemy) => !enemy.isAtBase());
   }
 
   /**
@@ -175,8 +173,8 @@ export class EnemyWave {
     isComplete: boolean;
   } {
     const aliveEnemies = this.getAllAliveEnemies();
-    const deadEnemies = this._enemies.filter(enemy => !enemy.isAlive);
-    const atBaseEnemies = this._enemies.filter(enemy => enemy.isAtBase());
+    const deadEnemies = this._enemies.filter((enemy) => !enemy.isAlive);
+    const atBaseEnemies = this._enemies.filter((enemy) => enemy.isAtBase());
 
     return {
       waveNumber: this.waveNumber,
@@ -186,7 +184,7 @@ export class EnemyWave {
       deadCount: deadEnemies.length,
       atBaseCount: atBaseEnemies.length,
       progress: this.getProgress(),
-      isComplete: this.isWaveComplete()
+      isComplete: this.isWaveComplete(),
     };
   }
 }

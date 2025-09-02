@@ -8,13 +8,13 @@ export class EnemyStats {
     public readonly movementSpeed: number
   ) {
     if (health <= 0) {
-      throw new Error('Health must be positive');
+      throw new Error("Health must be positive");
     }
     if (attackPower < 0) {
-      throw new Error('Attack power must be non-negative');
+      throw new Error("Attack power must be non-negative");
     }
     if (movementSpeed <= 0) {
-      throw new Error('Movement speed must be positive');
+      throw new Error("Movement speed must be positive");
     }
   }
 
@@ -24,9 +24,11 @@ export class EnemyStats {
    * @returns 等しい場合true
    */
   equals(other: EnemyStats): boolean {
-    return this.health === other.health &&
-           this.attackPower === other.attackPower &&
-           this.movementSpeed === other.movementSpeed;
+    return (
+      this.health === other.health &&
+      this.attackPower === other.attackPower &&
+      this.movementSpeed === other.movementSpeed
+    );
   }
 
   /**
@@ -44,9 +46,9 @@ export class EnemyStats {
    */
   scale(multiplier: number): EnemyStats {
     if (multiplier <= 0) {
-      throw new Error('Multiplier must be positive');
+      throw new Error("Multiplier must be positive");
     }
-    
+
     return new EnemyStats(
       Math.round(this.health * multiplier),
       Math.round(this.attackPower * multiplier),

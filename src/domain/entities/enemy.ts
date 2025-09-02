@@ -1,6 +1,6 @@
-import { EnemyType } from '../value-objects/enemy-type';
-import { Position } from '../value-objects/position';
-import { MovementPath } from '../value-objects/movement-path';
+import type { EnemyType } from "../value-objects/enemy-type";
+import type { MovementPath } from "../value-objects/movement-path";
+import type { Position } from "../value-objects/position";
 
 /**
  * 個々の敵を表現するエンティティ
@@ -9,7 +9,7 @@ export class Enemy {
   public readonly maxHealth: number;
   public readonly attackPower: number;
   public readonly movementSpeed: number;
-  
+
   private _currentHealth: number;
   private _currentPosition: Position;
   private _pathProgress: number;
@@ -25,7 +25,7 @@ export class Enemy {
     this.maxHealth = stats.health;
     this.attackPower = stats.attackPower;
     this.movementSpeed = stats.movementSpeed;
-    
+
     this._currentHealth = this.maxHealth;
     this._currentPosition = movementPath.spawnPoint;
     this._pathProgress = 0;
@@ -59,7 +59,7 @@ export class Enemy {
     }
 
     this._currentHealth = Math.max(0, this._currentHealth - damage);
-    
+
     if (this._currentHealth === 0) {
       this._isAlive = false;
     }

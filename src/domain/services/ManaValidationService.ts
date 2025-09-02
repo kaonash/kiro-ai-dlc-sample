@@ -1,4 +1,4 @@
-import { ManaPool } from "../entities/ManaPool";
+import type { ManaPool } from "../entities/ManaPool";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -48,7 +48,7 @@ export class ManaValidationService {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -73,7 +73,7 @@ export class ManaValidationService {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -97,7 +97,7 @@ export class ManaValidationService {
       isValid: errors.length === 0,
       errors,
       canConsume,
-      shortage
+      shortage,
     };
   }
 
@@ -123,7 +123,7 @@ export class ManaValidationService {
       errors,
       warnings,
       canGenerate: amount >= 0,
-      actualAmount
+      actualAmount,
     };
   }
 
@@ -141,14 +141,14 @@ export class ManaValidationService {
     return {
       isValid: errors.length === 0,
       errors,
-      timeDifference: currentTime - previousTime
+      timeDifference: currentTime - previousTime,
     };
   }
 
   validateGenerationTiming(
     lastGenerationTime: number,
     currentGameTime: number,
-    pauseDuration: number = 0
+    pauseDuration = 0
   ): GenerationTimingValidationResult {
     const errors: string[] = [];
 
@@ -172,7 +172,7 @@ export class ManaValidationService {
       isValid: errors.length === 0,
       errors,
       shouldGenerate,
-      generationCount
+      generationCount,
     };
   }
 }

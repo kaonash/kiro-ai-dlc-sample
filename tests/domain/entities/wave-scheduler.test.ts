@@ -133,6 +133,7 @@ describe('WaveScheduler', () => {
     it('should create and start new wave', () => {
       const scheduler = new WaveScheduler(waveConfiguration, new Date());
       scheduler.startWaveScheduling();
+      scheduler.setNextWaveTime(new Date(Date.now() - 1000));
       
       const wave = scheduler.startNextWave(movementPath);
       

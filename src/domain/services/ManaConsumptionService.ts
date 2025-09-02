@@ -1,4 +1,4 @@
-import { ManaPool } from "../entities/ManaPool";
+import type { ManaPool } from "../entities/ManaPool";
 import { ManaTransaction } from "../value-objects/ManaTransaction";
 
 export interface ConsumptionCheckResult {
@@ -42,7 +42,7 @@ export class ManaConsumptionService {
     const result: ConsumptionCheckResult = {
       canConsume,
       currentMana,
-      requiredMana: amount
+      requiredMana: amount,
     };
 
     if (!canConsume) {
@@ -52,7 +52,12 @@ export class ManaConsumptionService {
     return result;
   }
 
-  consumeMana(manaPool: ManaPool, amount: number, reason: string, timestamp: number): ConsumptionResult {
+  consumeMana(
+    manaPool: ManaPool,
+    amount: number,
+    reason: string,
+    timestamp: number
+  ): ConsumptionResult {
     if (amount < 0) {
       throw new Error("消費量は0以上である必要があります");
     }
@@ -61,7 +66,7 @@ export class ManaConsumptionService {
       return {
         isSuccess: true,
         consumedAmount: 0,
-        remainingMana: manaPool.getCurrentMana()
+        remainingMana: manaPool.getCurrentMana(),
       };
     }
 
@@ -69,7 +74,7 @@ export class ManaConsumptionService {
     if (!checkResult.canConsume) {
       return {
         isSuccess: false,
-        error: "魔力が不足しています"
+        error: "魔力が不足しています",
       };
     }
 
@@ -80,7 +85,7 @@ export class ManaConsumptionService {
       if (!result.isSuccess) {
         return {
           isSuccess: false,
-          error: result.error
+          error: result.error,
         };
       }
 
@@ -90,12 +95,12 @@ export class ManaConsumptionService {
       return {
         isSuccess: true,
         consumedAmount: amount,
-        remainingMana: manaPool.getCurrentMana()
+        remainingMana: manaPool.getCurrentMana(),
       };
     } catch (error) {
       return {
         isSuccess: false,
-        error: error instanceof Error ? error.message : "魔力消費中にエラーが発生しました"
+        error: error instanceof Error ? error.message : "魔力消費中にエラーが発生しました",
       };
     }
   }
@@ -123,11 +128,16 @@ export class ManaConsumptionService {
       totalCost,
       canConsumeAll,
       maxAffordableCards: affordableCards.length,
-      affordableCards
+      affordableCards,
     };
   }
 
-  private recordConsumption(poolId: string, amount: number, reason: string, timestamp: number): void {
+  private recordConsumption(
+    poolId: string,
+    amount: number,
+    reason: string,
+    timestamp: number
+  ): void {
     if (!this.consumptionHistory.has(poolId)) {
       this.consumptionHistory.set(poolId, []);
     }
