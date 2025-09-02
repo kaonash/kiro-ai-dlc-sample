@@ -203,6 +203,14 @@ export class GameTimer {
   }
 
   /**
+   * タイマーを更新する（ゲームループ用）
+   */
+  update(deltaTime: number): void {
+    // 現在の実装では特に何もしない
+    // 時間の計算は getCurrentTime() ベースで行われるため
+  }
+
+  /**
    * 経過時間をミリ秒で取得する（内部用）
    */
   private getElapsedMilliseconds(): number {

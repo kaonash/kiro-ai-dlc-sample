@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Defense Card Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            font-family: 'Arial', sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-canvas {
+            border: 3px solid #4ecdc4;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+            background: #000;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .controls-help {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .controls-help h3 {
+            margin-top: 0;
+            color: #4ecdc4;
+        }
+
+        .loading {
+            display: none;
+            color: #4ecdc4;
+            font-size: 18px;
+        }
+
+        .error {
+            display: none;
+            color: #ff6b6b;
+            font-size: 16px;
+            padding: 10px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">🏰 Tower Defense Card Game 🃏</h1>
+        
+        <canvas id="gameCanvas" class="game-canvas" width="800" height="600"></canvas>
+        
+        <div class="game-controls">
+            <button id="startBtn" class="btn btn-primary">新しいゲーム開始</button>
+            <button id="pauseBtn" class="btn btn-secondary" disabled>一時停止</button>
+            <button id="stopBtn" class="btn btn-secondary" disabled>ゲーム終了</button>
+        </div>
+
+        <div id="loading" class="loading">ゲームを初期化中...</div>
+        <div id="error" class="error"></div>
+
+        <div class="game-info">
+            <p><strong>🎮 ゲームの目標:</strong> カードを使ってタワーを設置し、敵の侵攻を防げ！</p>
+            <p><strong>⏱️ 制限時間:</strong> 3分間で可能な限り高いスコアを目指そう</p>
+        </div>
+
+        <div class="controls-help">
+            <h3>🎯 操作方法</h3>
+            <p><strong>マウス:</strong> カードをクリックして選択、ゲームフィールドをクリックしてタワー設置</p>
+            <p><strong>スペースキー:</strong> ゲームの一時停止/再開</p>
+            <p><strong>Escキー:</strong> ゲーム終了</p>
+            <p><strong>マウスホバー:</strong> カードやタワーの詳細情報を表示</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { TowerDefenseGame } from './dist/tower-defense-game.js';
+
+        let game = null;
+        let isGameRunning = false;
+
+        // DOM要素取得
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+
+        // エラー表示関数
+        function showError(message) {
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => {
+                error.style.display = 'none';
+            }, 5000);
+        }
+
+        // ローディング表示制御
+        function setLoading(show) {
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        // ボタン状態更新
+        function updateButtons() {
+            startBtn.disabled = isGameRunning;
+            pauseBtn.disabled = !isGameRunning;
+            stopBtn.disabled = !isGameRunning;
+        }
+
+        // ゲーム初期化
+        async function initializeGame() {
+            try {
+                setLoading(true);
+                game = new TowerDefenseGame('gameCanvas');
+                await game.initialize();
+                console.log('✅ Game initialized successfully');
+            } catch (err) {
+                console.error('❌ Game initialization failed:', err);
+                showError('ゲームの初期化に失敗しました: ' + err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // 新しいゲーム開始
+        async function startNewGame() {
+            if (!game) {
+                await initializeGame();
+            }
+
+            try {
+                setLoading(true);
+                await game.startNewGame();
+                isGameRunning = true;
+                updateButtons();
+                console.log('🚀 New game started');
+            } catch (err) {
+                console.error('❌ Failed to start game:', err);
+                showError('ゲームの開始に失敗しました: ' + err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // ゲーム停止
+        function stopGame() {
+            if (game && isGameRunning) {
+                game.stop();
+                isGameRunning = false;
+                updateButtons();
+                console.log('⏹️ Game stopped');
+            }
+        }
+
+        // ゲーム一時停止/再開
+        function togglePause() {
+            if (game && isGameRunning) {
+                // ゲームセッションの一時停止機能を呼び出し
+                // 実装は簡略化
+                console.log('⏸️ Game pause toggled');
+            }
+        }
+
+        // イベントリスナー設定
+        startBtn.addEventListener('click', startNewGame);
+        stopBtn.addEventListener('click', stopGame);
+        pauseBtn.addEventListener('click', togglePause);
+
+        // キーボードイベント
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && isGameRunning) {
+                stopGame();
+            }
+        });
+
+        // ページ読み込み完了時の初期化
+        window.addEventListener('load', () => {
+            console.log('🎮 Tower Defense Card Game loaded');
+            updateButtons();
+        });
+
+        // ページ離脱時のクリーンアップ
+        window.addEventListener('beforeunload', () => {
+            if (game) {
+                game.dispose();
+            }
+        });
+    </script>
+</body>
+</html>

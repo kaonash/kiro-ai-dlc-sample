@@ -5,9 +5,10 @@ import { Hand } from "./hand.js";
 import { GameTimer, type TimeProvider, SystemTimeProvider } from "./game-timer.js";
 import { BaseHealth } from "./base-health.js";
 import { GameScore } from "./game-score.js";
+import { ManaPool } from "./mana-pool.js";
 import { GameState } from "../value-objects/game-state.js";
 import { GameEndReason } from "../value-objects/game-end-reason.js";
-import { EnemyType } from "../value-objects/enemy-type.js";
+import type { EnemyType } from "../value-objects/enemy-type.js";
 
 /**
  * ゲームセッション統計
@@ -41,6 +42,7 @@ export class GameSession {
   private readonly _timer: GameTimer;
   private readonly _baseHealth: BaseHealth;
   private readonly _score: GameScore;
+  private readonly _manaPool: ManaPool;
   private _state: GameState;
   private _startedAt: Date | null = null;
   private _endedAt: Date | null = null;
@@ -66,6 +68,7 @@ export class GameSession {
     this._timer = new GameTimer(gameDuration, timeProvider);
     this._baseHealth = new BaseHealth(maxHealth);
     this._score = new GameScore();
+    this._manaPool = new ManaPool(id, 10, 10); // 初期マナ10、最大マナ10
     this._state = GameState.notStarted();
   }
 
@@ -188,6 +191,13 @@ export class GameSession {
    */
   get hand(): Hand {
     return this._hand;
+  }
+
+  /**
+   * 手札のカードを取得
+   */
+  getHand(): Card[] {
+    return this._hand.getCards();
   }
 
   /**
@@ -325,5 +335,46 @@ export class GameSession {
    */
   get endedAt(): Date | null {
     return this._endedAt;
+  }
+
+  /**
+   * マナプール
+   */
+  get manaPool(): ManaPool {
+    return this._manaPool;
+  }
+
+  /**
+   * ゲーム状態を更新
+   */
+  update(deltaTime: number): { gameEnded: boolean } {
+    if (!this._state.isActive()) {
+      return { gameEnded: false };
+    }
+
+    // タイマー更新
+    this._timer.update(deltaTime);
+
+    // ゲーム終了チェック
+    if (this.isGameOver()) {
+      const endReason = this.getEndReason();
+      if (endReason) {
+        this.endGame(endReason);
+        return { gameEnded: true };
+      }
+    }
+
+    return { gameEnded: false };
+  }
+
+  /**
+   * ゲームの一時停止/再開を切り替え
+   */
+  togglePause(): void {
+    if (this._state.isRunning()) {
+      this.pause();
+    } else if (this._state.isPaused()) {
+      this.resume();
+    }
   }
 }
