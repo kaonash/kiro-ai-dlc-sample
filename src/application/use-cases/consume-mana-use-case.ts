@@ -1,6 +1,6 @@
-import type { ManaPool } from "../../domain/entities/ManaPool";
-import { ManaConsumptionService } from "../../domain/services/ManaConsumptionService";
-import { ManaValidationService } from "../../domain/services/ManaValidationService";
+import type { ManaPool } from "../../domain/entities/mana-pool";
+import { ManaConsumptionService } from "../../domain/services/mana-consumption-service";
+import { ManaValidationService } from "../../domain/services/mana-validation-service";
 
 export interface ConsumeManaRequest {
   manaPool: ManaPool;

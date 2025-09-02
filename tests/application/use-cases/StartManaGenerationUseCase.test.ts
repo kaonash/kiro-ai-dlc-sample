@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { StartManaGenerationUseCase } from "../../../src/application/use-cases/StartManaGenerationUseCase";
-import { ManaPool } from "../../../src/domain/entities/ManaPool";
+import { StartManaGenerationUseCase } from "../../../src/application/use-cases/start-mana-generation-use-case";
+import { ManaPool } from "../../../src/domain/entities/mana-pool";
 
 // モックのゲームセッション管理インターフェース
 interface MockGameSessionManager {

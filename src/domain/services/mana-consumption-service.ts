@@ -1,5 +1,5 @@
-import type { ManaPool } from "../entities/ManaPool";
-import { ManaTransaction } from "../value-objects/ManaTransaction";
+import type { ManaPool } from "../entities/mana-pool";
+import { ManaTransaction } from "../value-objects/mana-transaction";
 
 export interface ConsumptionCheckResult {
   canConsume: boolean;

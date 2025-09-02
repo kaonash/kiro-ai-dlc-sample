@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { HybridManaTimer } from "../../../src/infrastructure/timers/HybridManaTimer";
+import { HybridManaTimer } from "../../../src/infrastructure/timers/hybrid-mana-timer";
 
 // モックのゲームセッション管理インターフェース
 interface MockGameSessionManager {

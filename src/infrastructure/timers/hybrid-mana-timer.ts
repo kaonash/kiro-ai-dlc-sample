@@ -1,4 +1,4 @@
-import type { ManaGenerationTimer, TimerResult } from "./ManaGenerationTimer";
+import type { ManaGenerationTimer, TimerResult } from "./mana-generation-timer";
 
 export interface GameSessionManager {
   getElapsedGameTime(): number;

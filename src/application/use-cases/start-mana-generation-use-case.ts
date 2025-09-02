@@ -1,6 +1,6 @@
-import type { ManaPool } from "../../domain/entities/ManaPool";
-import { ManaGenerationService } from "../../domain/services/ManaGenerationService";
-import { ManaValidationService } from "../../domain/services/ManaValidationService";
+import type { ManaPool } from "../../domain/entities/mana-pool";
+import { ManaGenerationService } from "../../domain/services/mana-generation-service";
+import { ManaValidationService } from "../../domain/services/mana-validation-service";
 
 export interface GameSessionManager {
   getElapsedGameTime(): number;

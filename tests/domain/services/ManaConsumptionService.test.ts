@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { ManaConsumptionService } from "../../../src/domain/services/ManaConsumptionService";
-import { ManaPool } from "../../../src/domain/entities/ManaPool";
-import { ManaTransaction } from "../../../src/domain/value-objects/ManaTransaction";
+import { ManaConsumptionService } from "../../../src/domain/services/mana-consumption-service";
+import { ManaPool } from "../../../src/domain/entities/mana-pool";
+import { ManaTransaction } from "../../../src/domain/value-objects/mana-transaction";
 
 describe("ManaConsumptionService", () => {
   let service: ManaConsumptionService;
