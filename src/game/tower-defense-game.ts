@@ -241,8 +241,11 @@ export class TowerDefenseGame {
     // 背景描画
     this.renderBackground();
 
-    // UI描画
+    // UI描画（背景レイヤー）
     this.uiManager.render(this.context, deltaTime);
+
+    // ゲーム要素描画（前景レイヤー）
+    this.renderGameElements();
 
     // エフェクト描画
     this.effectManager.render(this.context, deltaTime);
@@ -265,6 +268,24 @@ export class TowerDefenseGame {
   }
 
   /**
+   * ゲーム要素描画
+   */
+  private renderGameElements(): void {
+    if (!this.gameSession) return;
+
+    // 移動パスを描画
+    this.gameRenderer.renderMovementPath(this.gameSession.movementPath.pathPoints);
+
+    // タワーを描画
+    const towers = this.gameSession.getTowers();
+    this.gameRenderer.renderTowers(towers);
+
+    // 敵を描画
+    const activeEnemies = this.gameSession.getActiveEnemies();
+    this.gameRenderer.renderEnemies(activeEnemies);
+  }
+
+  /**
    * デバッグ情報描画
    */
   private renderDebugInfo(deltaTime: number): void {
@@ -274,6 +295,27 @@ export class TowerDefenseGame {
     this.context.font = '12px Arial';
     this.context.fillText(`FPS: ${fps}`, 10, 20);
     this.context.fillText(`Effects: ${this.effectManager.activeEffectCount}`, 10, 35);
+    
+    if (this.gameSession) {
+      const activeEnemies = this.gameSession.getActiveEnemies();
+      const towers = this.gameSession.getTowers();
+      const waveStats = this.gameSession.waveScheduler.getSchedulerStats();
+      
+      this.context.fillText(`Enemies: ${activeEnemies.length}`, 10, 50);
+      this.context.fillText(`Towers: ${towers.length}`, 10, 65);
+      this.context.fillText(`Wave: ${waveStats.currentWaveNumber}`, 10, 80);
+      this.context.fillText(`Active: ${waveStats.isActive}`, 10, 95);
+      
+      // 次の波までの時間を表示
+      const now = new Date();
+      const timeToNextWave = Math.max(0, Math.ceil((waveStats.nextWaveTime.getTime() - now.getTime()) / 1000));
+      this.context.fillText(`Next Wave: ${timeToNextWave}s`, 10, 110);
+      
+      if (waveStats.currentWaveStats) {
+        this.context.fillText(`Wave Progress: ${Math.round(waveStats.currentWaveStats.progress * 100)}%`, 10, 125);
+        this.context.fillText(`Spawned: ${waveStats.currentWaveStats.spawnedCount}/${waveStats.currentWaveStats.totalEnemyCount}`, 10, 140);
+      }
+    }
   }
 
   /**
@@ -293,18 +335,33 @@ export class TowerDefenseGame {
       if (!this.gameSession || event.type !== 'card-played') return;
 
       try {
-        const result = await this.playCardUseCase.execute(this.gameSession, event.cardId);
+        // タワー配置を試行
+        const placementResult = this.gameSession.playCardAndPlaceTower(event.cardId, event.position);
 
-        if (result.success) {
+        if (placementResult.success && placementResult.tower) {
           // エフェクト生成
           this.effectManager.createExplosion(event.position);
-          this.effectManager.createDamageNumber(event.position, 25, false);
           
           // 音響再生
           this.playAudioUseCase.playCardUsed();
           this.playAudioUseCase.playTowerPlaced();
           
-          console.log(`Card played: ${event.cardId} at (${event.position.x}, ${event.position.y})`);
+          // UI更新
+          const hand = this.gameSession.getHand();
+          this.uiManager.updateHandState({
+            cards: hand.map(card => ({
+              id: card.id,
+              name: card.name,
+              cost: card.cost.value,
+            })),
+            currentMana: this.gameSession.manaPool.getCurrentMana(),
+            maxMana: this.gameSession.manaPool.getMaxMana(),
+          });
+          
+          console.log(`Tower placed: ${placementResult.tower.type} at (${event.position.x}, ${event.position.y})`);
+        } else {
+          console.warn(`Failed to place tower: ${placementResult.error}`);
+          // エラー音を再生（オプション）
         }
       } catch (error) {
         console.error('Failed to play card:', error);
@@ -340,17 +397,39 @@ export class TowerDefenseGame {
     });
 
     // 入力イベント
+    let selectedCardId: string | null = null;
+    
     this.inputHandler.onMouseUp = (position: Position, button: number) => {
-      if (button !== 0) return; // 左クリックのみ
-      
-      // カード選択チェック（簡略化）
-      const cardIndex = 0; // 仮の実装
-      const cardEvent = UIEventFactory.createCardSelected(cardIndex, `card-${cardIndex}`);
-      this.eventBus.emit(cardEvent);
+      if (button !== 0 || !this.gameSession) return; // 左クリックのみ
 
-      // ゲームフィールドクリック（簡略化）
-      const playEvent = UIEventFactory.createCardPlayed('selected-card', position, 3);
-      this.eventBus.emit(playEvent);
+      // 手札エリアのクリック判定（簡略化）
+      if (position.y > this.canvas.height - 120) {
+        // 手札エリアをクリック - カード選択
+        const hand = this.gameSession.getHand();
+        if (hand.length > 0) {
+          const cardWidth = 80;
+          const cardSpacing = 10;
+          const startX = (this.canvas.width - (hand.length * (cardWidth + cardSpacing) - cardSpacing)) / 2;
+          
+          for (let i = 0; i < hand.length; i++) {
+            const cardX = startX + i * (cardWidth + cardSpacing);
+            if (position.x >= cardX && position.x <= cardX + cardWidth) {
+              selectedCardId = hand[i].id;
+              const cardEvent = UIEventFactory.createCardSelected(i, selectedCardId);
+              this.eventBus.emit(cardEvent);
+              console.log(`Card selected: ${hand[i].name}`);
+              return;
+            }
+          }
+        }
+      } else if (position.y > 60 && position.y < this.canvas.height - 120) {
+        // ゲームフィールドをクリック - タワー配置
+        if (selectedCardId) {
+          const playEvent = UIEventFactory.createCardPlayed(selectedCardId, position, 3);
+          this.eventBus.emit(playEvent);
+          selectedCardId = null; // 選択をリセット
+        }
+      }
     };
 
     // キーボードイベント

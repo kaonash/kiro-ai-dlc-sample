@@ -130,4 +130,34 @@ export class Enemy {
   getAge(): number {
     return Date.now() - this.spawnTime.getTime();
   }
+
+  /**
+   * 敵の状態を更新する
+   * @param deltaTime 経過時間（ミリ秒）
+   */
+  update(deltaTime: number): void {
+    if (!this._isAlive) {
+      return;
+    }
+
+    const oldPosition = this._currentPosition;
+    
+    // 移動処理
+    this.move(deltaTime);
+    
+    // デバッグログ（最初の数回のみ）
+    if (this.getAge() < 5000) { // 5秒間のみログ出力
+      console.log(`Enemy ${this.id} moved from (${oldPosition.x}, ${oldPosition.y}) to (${this._currentPosition.x}, ${this._currentPosition.y}), progress: ${this._pathProgress}`);
+    }
+  }
+
+  /**
+   * 体力情報を取得する（描画用）
+   */
+  get health(): { currentHealth: { value: number }, maxHealth: number } {
+    return {
+      currentHealth: { value: this._currentHealth },
+      maxHealth: this.maxHealth
+    };
+  }
 }

@@ -141,6 +141,79 @@ export class ManaPool {
     };
   }
 
+  /**
+   * 簡単なマナ消費（数値のみ）
+   */
+  consumeMana(amount: number): boolean {
+    if (amount <= 0) {
+      return false;
+    }
+
+    if (!this.canConsume(amount)) {
+      return false;
+    }
+
+    this.currentMana -= amount;
+
+    // イベント発行
+    this.domainEvents.push(
+      new ManaConsumedEvent(
+        this.id,
+        amount,
+        this.currentMana,
+        "card-usage",
+        new Date()
+      )
+    );
+
+    return true;
+  }
+
+  /**
+   * トランザクションベースのマナ消費
+   */
+  consumeManaWithTransaction(transaction: ManaTransaction): ManaOperationResult {
+    if (!transaction.isConsumption()) {
+      return {
+        isSuccess: false,
+        error: "消費トランザクションではありません",
+      };
+    }
+
+    const amount = transaction.getAmount();
+    if (amount <= 0) {
+      return {
+        isSuccess: false,
+        error: "消費量は正の値である必要があります",
+      };
+    }
+
+    if (!this.canConsume(amount)) {
+      return {
+        isSuccess: false,
+        error: "魔力が不足しています",
+      };
+    }
+
+    this.currentMana -= amount;
+
+    // イベント発行
+    this.domainEvents.push(
+      new ManaConsumedEvent(
+        this.id,
+        amount,
+        this.currentMana,
+        "card-usage", // デフォルトの理由
+        transaction.getTimestamp()
+      )
+    );
+
+    return {
+      isSuccess: true,
+      actualAmount: amount,
+    };
+  }
+
   canConsume(amount: number): boolean {
     return this.currentMana >= amount;
   }

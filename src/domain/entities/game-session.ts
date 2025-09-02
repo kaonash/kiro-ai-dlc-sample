@@ -9,6 +9,13 @@ import { ManaPool } from "./mana-pool.js";
 import { GameState } from "../value-objects/game-state.js";
 import { GameEndReason } from "../value-objects/game-end-reason.js";
 import type { EnemyType } from "../value-objects/enemy-type.js";
+import { WaveScheduler } from "./wave-scheduler.js";
+import { WaveConfiguration } from "../value-objects/wave-configuration.js";
+import { MovementPath } from "../value-objects/movement-path.js";
+import { Position } from "../value-objects/position.js";
+import type { Enemy } from "./enemy.js";
+import { Tower } from "./tower.js";
+import { TowerPlacementService } from "../services/tower-placement-service.js";
 
 /**
  * ゲームセッション統計
@@ -47,6 +54,14 @@ export class GameSession {
   private _startedAt: Date | null = null;
   private _endedAt: Date | null = null;
 
+  // 敵生成システム
+  private readonly _waveScheduler: WaveScheduler;
+  private readonly _movementPath: MovementPath;
+
+  // タワー管理システム
+  private readonly _towers: Tower[] = [];
+  private readonly _towerPlacementService: TowerPlacementService;
+
   constructor(
     id: string, 
     cardPool: CardPool, 
@@ -70,6 +85,22 @@ export class GameSession {
     this._score = new GameScore();
     this._manaPool = new ManaPool(id, 10, 10); // 初期マナ10、最大マナ10
     this._state = GameState.notStarted();
+
+    // 敵生成システムの初期化
+    const waveConfig = WaveConfiguration.createDefault();
+    this._waveScheduler = new WaveScheduler(waveConfig, new Date());
+    
+    // デフォルトの移動パスを作成（画面左から右へ）
+    this._movementPath = new MovementPath([
+      new Position(0, 300),     // 左端（スタート地点）
+      new Position(200, 300),   // 中間点1
+      new Position(400, 200),   // 中間点2（少し上に）
+      new Position(600, 300),   // 中間点3
+      new Position(800, 300)    // 右端（ゴール地点）
+    ]);
+
+    // タワー配置サービスの初期化
+    this._towerPlacementService = new TowerPlacementService();
   }
 
   /**
@@ -99,6 +130,12 @@ export class GameSession {
     this._startedAt = new Date();
     this._endedAt = null;
 
+    // 敵生成システムの開始
+    this._waveScheduler.startWaveScheduling();
+    
+    // 最初の波を即座に開始（テスト用）
+    this._waveScheduler.startNextWave(this._movementPath);
+
     this._isActive = true;
     this._cardsPlayed = 0;
   }
@@ -120,6 +157,48 @@ export class GameSession {
     this._cardsPlayed++;
 
     return card;
+  }
+
+  /**
+   * カードを使ってタワーを配置
+   */
+  playCardAndPlaceTower(cardId: string, position: Position): { success: boolean; tower?: Tower; error?: string } {
+    if (!this._isActive) {
+      return { success: false, error: "ゲームがアクティブではありません" };
+    }
+
+    if (!this._hand.hasCard(cardId)) {
+      return { success: false, error: "指定されたカードが手札にありません" };
+    }
+
+    // マナコストをチェック
+    const card = this._hand.getCard(cardId);
+    if (!card) {
+      return { success: false, error: "カードが見つかりません" };
+    }
+
+    if (this._manaPool.getCurrentMana() < card.cost.value) {
+      return { success: false, error: "マナが不足しています" };
+    }
+
+    // タワー配置を試行
+    const placementResult = this._towerPlacementService.placeTower(card, position, this._towers);
+    
+    if (!placementResult.success) {
+      return placementResult;
+    }
+
+    // 成功した場合、カードを消費してタワーを追加
+    this._hand.removeCard(cardId);
+    this._manaPool.consumeMana(card.cost.value);
+    this._cardLibrary.discoverCard(card);
+    this._cardsPlayed++;
+
+    if (placementResult.tower) {
+      this._towers.push(placementResult.tower);
+    }
+
+    return placementResult;
   }
 
   /**
@@ -355,6 +434,33 @@ export class GameSession {
     // タイマー更新
     this._timer.update(deltaTime);
 
+    // 敵生成システム更新
+    this._waveScheduler.update(new Date(), this._movementPath);
+
+    // 敵の移動更新
+    const activeEnemies = this._waveScheduler.getAllActiveEnemies();
+    for (const enemy of activeEnemies) {
+      enemy.update(deltaTime);
+    }
+
+    // タワーの攻撃処理
+    const currentTimeMs = Date.now();
+    for (const tower of this._towers) {
+      const attackResult = tower.update(activeEnemies, currentTimeMs);
+      if (attackResult.attacked && attackResult.target) {
+        // 敵撃破チェック
+        if (!attackResult.target.isAlive) {
+          this.handleEnemyDefeated(attackResult.target.type);
+        }
+      }
+    }
+
+    // 基地攻撃処理
+    const baseDamage = this._waveScheduler.processBaseAttacks();
+    if (baseDamage > 0) {
+      this.handleBaseDamaged(baseDamage);
+    }
+
     // ゲーム終了チェック
     if (this.isGameOver()) {
       const endReason = this.getEndReason();
@@ -376,5 +482,40 @@ export class GameSession {
     } else if (this._state.isPaused()) {
       this.resume();
     }
+  }
+
+  /**
+   * 現在アクティブな敵を取得
+   */
+  getActiveEnemies(): Enemy[] {
+    return this._waveScheduler.getAllActiveEnemies();
+  }
+
+  /**
+   * 波スケジューラーを取得
+   */
+  get waveScheduler(): WaveScheduler {
+    return this._waveScheduler;
+  }
+
+  /**
+   * 移動パスを取得
+   */
+  get movementPath(): MovementPath {
+    return this._movementPath;
+  }
+
+  /**
+   * 配置されたタワーを取得
+   */
+  getTowers(): Tower[] {
+    return [...this._towers];
+  }
+
+  /**
+   * タワー配置サービスを取得
+   */
+  get towerPlacementService(): TowerPlacementService {
+    return this._towerPlacementService;
   }
 }

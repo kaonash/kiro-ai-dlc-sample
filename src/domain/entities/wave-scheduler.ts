@@ -19,7 +19,8 @@ export class WaveScheduler {
     public readonly gameStartTime: Date
   ) {
     this.waveInterval = waveConfiguration.getWaveInterval();
-    this._nextWaveTime = new Date(gameStartTime.getTime() + this.waveInterval);
+    // 最初の波はゲーム開始から3秒後に開始
+    this._nextWaveTime = new Date(gameStartTime.getTime() + 3000);
   }
 
   // ゲッター

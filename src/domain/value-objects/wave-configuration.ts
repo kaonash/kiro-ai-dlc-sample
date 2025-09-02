@@ -110,7 +110,7 @@ export class WaveConfiguration {
    * @returns 波間隔（ミリ秒）
    */
   getWaveInterval(): number {
-    return 30000; // 30秒
+    return 5000; // 5秒（テスト用に短縮）
   }
 
   /**
@@ -132,6 +132,6 @@ export class WaveConfiguration {
    * @returns デフォルトの波設定
    */
   static createDefault(): WaveConfiguration {
-    return new WaveConfiguration(10, 10, 1000);
+    return new WaveConfiguration(5, 2, 500); // 敵数5、増加2、生成間隔500ms
   }
 }

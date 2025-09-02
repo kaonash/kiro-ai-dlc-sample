@@ -1,4 +1,7 @@
 import { Rectangle } from "../value-objects/rectangle";
+import type { Enemy } from "./enemy";
+import type { Position } from "../value-objects/position";
+import type { Tower } from "./tower";
 
 /**
  * レンダリングレイヤーインターフェース
@@ -226,5 +229,318 @@ export class GameRenderer {
     if (this._frameTimes.length > this._maxFrameHistory) {
       this._frameTimes.shift();
     }
+  }
+
+  /**
+   * 敵を描画
+   */
+  renderEnemies(enemies: Enemy[]): void {
+    this.context.save();
+    
+    console.log(`Rendering ${enemies.length} enemies`); // デバッグログ
+    
+    for (const enemy of enemies) {
+      if (!enemy.isAlive) {
+        console.log(`Skipping dead enemy: ${enemy.id}`);
+        continue;
+      }
+
+      const position = enemy.currentPosition;
+      const size = this.getEnemySizeByType(enemy.type);
+      const color = this.getEnemyColorByType(enemy.type);
+
+      console.log(`Drawing enemy ${enemy.id} at (${position.x}, ${position.y}) with size ${size} and color ${color}`);
+
+      // 画面境界チェック
+      if (position.x < -50 || position.x > this.canvas.width + 50 || 
+          position.y < -50 || position.y > this.canvas.height + 50) {
+        console.log(`Enemy ${enemy.id} is outside screen bounds`);
+      }
+
+      // 敵の本体を描画
+      this.context.fillStyle = color;
+      this.context.fillRect(
+        position.x - size / 2,
+        position.y - size / 2,
+        size,
+        size
+      );
+
+      // 敵の枠線を描画
+      this.context.strokeStyle = '#000000';
+      this.context.lineWidth = 2;
+      this.context.strokeRect(
+        position.x - size / 2,
+        position.y - size / 2,
+        size,
+        size
+      );
+
+      // 体力バーを描画
+      this.renderEnemyHealthBar(enemy, position, size);
+    }
+    
+    this.context.restore();
+  }
+
+  /**
+   * 敵の体力バーを描画
+   */
+  private renderEnemyHealthBar(enemy: Enemy, position: Position, size: number): void {
+    const barWidth = size;
+    const barHeight = 4;
+    const barY = position.y - size / 2 - 8;
+
+    // 背景バー
+    this.context.fillStyle = '#333333';
+    this.context.fillRect(
+      position.x - barWidth / 2,
+      barY,
+      barWidth,
+      barHeight
+    );
+
+    // 体力バー
+    const healthPercentage = enemy.health.currentHealth.value / enemy.health.maxHealth;
+    const healthBarWidth = barWidth * healthPercentage;
+    
+    // 体力に応じて色を変更
+    if (healthPercentage > 0.6) {
+      this.context.fillStyle = '#4CAF50'; // 緑
+    } else if (healthPercentage > 0.3) {
+      this.context.fillStyle = '#FF9800'; // オレンジ
+    } else {
+      this.context.fillStyle = '#F44336'; // 赤
+    }
+
+    this.context.fillRect(
+      position.x - barWidth / 2,
+      barY,
+      healthBarWidth,
+      barHeight
+    );
+  }
+
+  /**
+   * 移動パスを描画
+   */
+  renderMovementPath(pathPoints: Position[]): void {
+    if (pathPoints.length < 2) return;
+
+    this.context.save();
+    this.context.strokeStyle = '#666666';
+    this.context.lineWidth = 3;
+    this.context.setLineDash([5, 5]);
+
+    this.context.beginPath();
+    this.context.moveTo(pathPoints[0].x, pathPoints[0].y);
+
+    for (let i = 1; i < pathPoints.length; i++) {
+      this.context.lineTo(pathPoints[i].x, pathPoints[i].y);
+    }
+
+    this.context.stroke();
+    this.context.restore();
+
+    // スタート地点とゴール地点を描画
+    this.renderPathPoint(pathPoints[0], '#4CAF50', 'START');
+    this.renderPathPoint(pathPoints[pathPoints.length - 1], '#F44336', 'GOAL');
+  }
+
+  /**
+   * パス地点を描画
+   */
+  private renderPathPoint(position: Position, color: string, label: string): void {
+    this.context.save();
+    
+    // 円を描画
+    this.context.fillStyle = color;
+    this.context.beginPath();
+    this.context.arc(position.x, position.y, 8, 0, Math.PI * 2);
+    this.context.fill();
+
+    // ラベルを描画
+    this.context.fillStyle = '#FFFFFF';
+    this.context.font = '10px Arial';
+    this.context.textAlign = 'center';
+    this.context.fillText(label, position.x, position.y - 15);
+    
+    this.context.restore();
+  }
+
+  /**
+   * 敵タイプに応じたサイズを取得
+   */
+  private getEnemySizeByType(enemyType: any): number {
+    // 敵タイプに応じてサイズを変更
+    switch (enemyType.name) {
+      case 'BASIC':
+        return 20;
+      case 'FAST':
+        return 16;
+      case 'RANGED':
+        return 18;
+      case 'ENHANCED':
+        return 24;
+      case 'BOSS':
+        return 32;
+      default:
+        return 20;
+    }
+  }
+
+  /**
+   * 敵タイプに応じた色を取得
+   */
+  private getEnemyColorByType(enemyType: any): string {
+    // 敵タイプに応じて色を変更
+    switch (enemyType.name) {
+      case 'BASIC':
+        return '#FF6B6B';
+      case 'FAST':
+        return '#4ECDC4';
+      case 'RANGED':
+        return '#45B7D1';
+      case 'ENHANCED':
+        return '#96CEB4';
+      case 'BOSS':
+        return '#FFEAA7';
+      default:
+        return '#FF6B6B';
+    }
+  }
+
+  /**
+   * タワーを描画
+   */
+  renderTowers(towers: Tower[]): void {
+    this.context.save();
+    
+    for (const tower of towers) {
+      const position = tower.position;
+      const size = this.getTowerSizeByType(tower.type);
+      const color = this.getTowerColorByType(tower.type);
+
+      // タワーの射程範囲を描画（薄く）
+      this.context.strokeStyle = color;
+      this.context.globalAlpha = 0.1;
+      this.context.lineWidth = 1;
+      this.context.beginPath();
+      this.context.arc(position.x, position.y, tower.stats.range, 0, Math.PI * 2);
+      this.context.stroke();
+      this.context.globalAlpha = 1.0;
+
+      // タワーの本体を描画
+      this.context.fillStyle = color;
+      this.context.fillRect(
+        position.x - size / 2,
+        position.y - size / 2,
+        size,
+        size
+      );
+
+      // タワーの枠線を描画
+      this.context.strokeStyle = '#000000';
+      this.context.lineWidth = 2;
+      this.context.strokeRect(
+        position.x - size / 2,
+        position.y - size / 2,
+        size,
+        size
+      );
+
+      // ターゲットがいる場合は攻撃線を描画
+      if (tower.currentTarget && tower.currentTarget.isAlive) {
+        this.renderAttackLine(tower.position, tower.currentTarget.currentPosition);
+      }
+    }
+    
+    this.context.restore();
+  }
+
+  /**
+   * 攻撃線を描画
+   */
+  private renderAttackLine(from: Position, to: Position): void {
+    this.context.save();
+    this.context.strokeStyle = '#FFD700';
+    this.context.lineWidth = 2;
+    this.context.globalAlpha = 0.7;
+    
+    this.context.beginPath();
+    this.context.moveTo(from.x, from.y);
+    this.context.lineTo(to.x, to.y);
+    this.context.stroke();
+    
+    this.context.restore();
+  }
+
+  /**
+   * タワータイプに応じたサイズを取得
+   */
+  private getTowerSizeByType(towerType: string): number {
+    switch (towerType) {
+      case 'ARCHER':
+        return 24;
+      case 'CANNON':
+        return 32;
+      case 'MAGIC':
+        return 28;
+      case 'ICE':
+        return 26;
+      case 'FIRE':
+        return 30;
+      case 'LIGHTNING':
+        return 26;
+      case 'POISON':
+        return 22;
+      case 'SUPPORT':
+        return 20;
+      default:
+        return 24;
+    }
+  }
+
+  /**
+   * タワータイプに応じた色を取得
+   */
+  private getTowerColorByType(towerType: string): string {
+    switch (towerType) {
+      case 'ARCHER':
+        return '#8B4513';
+      case 'CANNON':
+        return '#696969';
+      case 'MAGIC':
+        return '#9370DB';
+      case 'ICE':
+        return '#87CEEB';
+      case 'FIRE':
+        return '#FF4500';
+      case 'LIGHTNING':
+        return '#FFD700';
+      case 'POISON':
+        return '#9ACD32';
+      case 'SUPPORT':
+        return '#DDA0DD';
+      default:
+        return '#8B4513';
+    }
+  }
+
+  /**
+   * 配置可能位置を描画（デバッグ用）
+   */
+  renderValidPlacementPositions(positions: Position[]): void {
+    this.context.save();
+    this.context.fillStyle = '#00FF00';
+    this.context.globalAlpha = 0.3;
+    
+    for (const position of positions) {
+      this.context.beginPath();
+      this.context.arc(position.x, position.y, 8, 0, Math.PI * 2);
+      this.context.fill();
+    }
+    
+    this.context.restore();
   }
 }
