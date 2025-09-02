@@ -1,4 +1,4 @@
-import type { ManaPool } from "../entities/ManaPool";
+import type { ManaPool } from "../entities/mana-pool";
 
 export interface ValidationResult {
   isValid: boolean;

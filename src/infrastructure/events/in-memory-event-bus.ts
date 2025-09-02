@@ -1,5 +1,5 @@
-import type { DomainEvent } from "../../domain/events/ManaEvents";
-import type { EventBus, EventHandler, EventResult, EventStatistics } from "./EventBus";
+import type { DomainEvent } from "../../domain/events/mana-events";
+import type { EventBus, EventHandler, EventResult, EventStatistics } from "./event-bus";
 
 export class InMemoryEventBus implements EventBus {
   private readonly subscribers: Map<string, EventHandler[]> = new Map();

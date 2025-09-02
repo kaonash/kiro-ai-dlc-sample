@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { InMemoryEventBus } from "../../../src/infrastructure/events/InMemoryEventBus";
-import { ManaGeneratedEvent, ManaConsumedEvent } from "../../../src/domain/events/ManaEvents";
+import { InMemoryEventBus } from "../../../src/infrastructure/events/in-memory-event-bus";
+import { ManaGeneratedEvent, ManaConsumedEvent } from "../../../src/domain/events/mana-events";
 
 describe("InMemoryEventBus", () => {
   let eventBus: InMemoryEventBus;

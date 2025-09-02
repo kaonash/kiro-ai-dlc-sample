@@ -3,7 +3,7 @@ import {
   ManaGeneratedEvent, 
   ManaConsumedEvent, 
   ManaCapReachedEvent 
-} from "../../../src/domain/events/ManaEvents";
+} from "../../../src/domain/events/mana-events";
 
 describe("ManaEvents", () => {
   describe("ManaGeneratedEvent", () => {

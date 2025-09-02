@@ -1,6 +1,6 @@
-import type { ManaPool } from "../../domain/entities/ManaPool";
-import type { DomainEvent } from "../../domain/events/ManaEvents";
-import { ManaValidationService } from "../../domain/services/ManaValidationService";
+import type { ManaPool } from "../../domain/entities/mana-pool";
+import type { DomainEvent } from "../../domain/events/mana-events";
+import { ManaValidationService } from "../../domain/services/mana-validation-service";
 
 export interface GetManaStatusRequest {
   manaPool: ManaPool;

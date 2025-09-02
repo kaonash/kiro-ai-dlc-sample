@@ -1,4 +1,4 @@
-import type { ManaPool } from "../../domain/entities/ManaPool";
+import type { ManaPool } from "../../domain/entities/mana-pool";
 
 export interface SaveResult {
   isSuccess: boolean;

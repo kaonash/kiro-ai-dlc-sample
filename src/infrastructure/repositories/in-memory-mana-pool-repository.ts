@@ -1,10 +1,10 @@
-import { ManaPool } from "../../domain/entities/ManaPool";
+import { ManaPool } from "../../domain/entities/mana-pool";
 import type {
   DeleteResult,
   ManaPoolRepository,
   ManaPoolStatistics,
   SaveResult,
-} from "./ManaPoolRepository";
+} from "./mana-pool-repository";
 
 export class InMemoryManaPoolRepository implements ManaPoolRepository {
   private readonly pools: Map<string, ManaPool> = new Map();

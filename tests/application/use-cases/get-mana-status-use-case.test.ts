@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { GetManaStatusUseCase } from "../../../src/application/use-cases/GetManaStatusUseCase";
-import { ManaPool } from "../../../src/domain/entities/ManaPool";
-import { ManaTransaction } from "../../../src/domain/value-objects/ManaTransaction";
+import { GetManaStatusUseCase } from "../../../src/application/use-cases/get-mana-status-use-case";
+import { ManaPool } from "../../../src/domain/entities/mana-pool";
+import { ManaTransaction } from "../../../src/domain/value-objects/mana-transaction";
 
 describe("GetManaStatusUseCase", () => {
   let useCase: GetManaStatusUseCase;

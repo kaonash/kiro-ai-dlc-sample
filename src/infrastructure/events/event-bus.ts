@@ -1,4 +1,4 @@
-import type { DomainEvent } from "../../domain/events/ManaEvents";
+import type { DomainEvent } from "../../domain/events/mana-events";
 
 export interface EventResult {
   isSuccess: boolean;

@@ -3,8 +3,8 @@ import {
   ManaCapReachedEvent,
   ManaConsumedEvent,
   ManaGeneratedEvent,
-} from "../events/ManaEvents";
-import type { ManaTransaction } from "../value-objects/ManaTransaction";
+} from "../events/mana-events";
+import type { ManaTransaction } from "../value-objects/mana-transaction";
 
 export interface ManaOperationResult {
   isSuccess: boolean;

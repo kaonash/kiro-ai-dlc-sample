@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { ManaTransaction } from "../../../src/domain/value-objects/ManaTransaction";
+import { ManaTransaction } from "../../../src/domain/value-objects/mana-transaction";
 
 describe("ManaTransaction", () => {
   describe("初期化", () => {

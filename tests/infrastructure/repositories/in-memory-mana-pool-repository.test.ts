@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { InMemoryManaPoolRepository } from "../../../src/infrastructure/repositories/InMemoryManaPoolRepository";
-import { ManaPool } from "../../../src/domain/entities/ManaPool";
+import { InMemoryManaPoolRepository } from "../../../src/infrastructure/repositories/in-memory-mana-pool-repository";
+import { ManaPool } from "../../../src/domain/entities/mana-pool";
 
 describe("InMemoryManaPoolRepository", () => {
   let repository: InMemoryManaPoolRepository;
@@ -40,7 +40,7 @@ describe("InMemoryManaPoolRepository", () => {
       await repository.save(manaPool);
       
       // 魔力を変更
-      const { ManaTransaction } = await import("../../../src/domain/value-objects/ManaTransaction");
+      const { ManaTransaction } = await import("../../../src/domain/value-objects/mana-transaction");
       const transaction = new ManaTransaction(20, "generation", Date.now());
       manaPool.generateMana(transaction);
       

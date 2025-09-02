@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { ManaPool } from "../../src/domain/entities/ManaPool";
-import { StartManaGenerationUseCase } from "../../src/application/use-cases/StartManaGenerationUseCase";
-import { ConsumeManaUseCase } from "../../src/application/use-cases/ConsumeManaUseCase";
-import { GetManaStatusUseCase } from "../../src/application/use-cases/GetManaStatusUseCase";
-import { InMemoryManaPoolRepository } from "../../src/infrastructure/repositories/InMemoryManaPoolRepository";
-import { InMemoryEventBus } from "../../src/infrastructure/events/InMemoryEventBus";
+import { ManaPool } from "../../src/domain/entities/mana-pool";
+import { StartManaGenerationUseCase } from "../../src/application/use-cases/start-mana-generation-use-case";
+import { ConsumeManaUseCase } from "../../src/application/use-cases/consume-mana-use-case";
+import { GetManaStatusUseCase } from "../../src/application/use-cases/get-mana-status-use-case";
+import { InMemoryManaPoolRepository } from "../../src/infrastructure/repositories/in-memory-mana-pool-repository";
+import { InMemoryEventBus } from "../../src/infrastructure/events/in-memory-event-bus";
 
 // モックのゲームセッション管理
 class MockGameSessionManager {
@@ -87,7 +87,7 @@ describe("ManaSystem Integration Tests", () => {
 
     it("上限到達時の魔力生成フロー", async () => {
       // 魔力を95まで増やす
-      const { ManaTransaction } = await import("../../src/domain/value-objects/ManaTransaction");
+      const { ManaTransaction } = await import("../../src/domain/value-objects/mana-transaction");
       const transaction = new ManaTransaction(85, "generation", Date.now());
       manaPool.generateMana(transaction);
 
@@ -109,7 +109,7 @@ describe("ManaSystem Integration Tests", () => {
   describe("魔力消費フローの統合テスト", () => {
     beforeEach(async () => {
       // テスト用に魔力を50に設定
-      const { ManaTransaction } = await import("../../src/domain/value-objects/ManaTransaction");
+      const { ManaTransaction } = await import("../../src/domain/value-objects/mana-transaction");
       const transaction = new ManaTransaction(40, "generation", Date.now());
       manaPool.generateMana(transaction);
     });
@@ -289,7 +289,7 @@ describe("ManaSystem Integration Tests", () => {
 
     it("複数カードの使用可能性チェック", async () => {
       // 魔力を30に設定
-      const { ManaTransaction } = await import("../../src/domain/value-objects/ManaTransaction");
+      const { ManaTransaction } = await import("../../src/domain/value-objects/mana-transaction");
       const transaction = new ManaTransaction(20, "generation", Date.now());
       manaPool.generateMana(transaction);
 

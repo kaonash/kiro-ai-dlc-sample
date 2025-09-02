@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { ManaPool } from "../../../src/domain/entities/ManaPool";
-import { ManaTransaction } from "../../../src/domain/value-objects/ManaTransaction";
+import { ManaPool } from "../../../src/domain/entities/mana-pool";
+import { ManaTransaction } from "../../../src/domain/value-objects/mana-transaction";
 
 describe("ManaPool", () => {
   let manaPool: ManaPool;
