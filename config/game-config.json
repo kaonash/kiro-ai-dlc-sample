@@ -9,6 +9,12 @@
     "maxSize": 8,
     "initialSize": 8
   },
+  "mana": {
+    "initialMana": 10,
+    "maxMana": 100,
+    "regenAmount": 1,
+    "regenInterval": 1000
+  },
   "cardPool": {
     "minSize": 30,
     "totalCards": 32

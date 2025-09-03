@@ -6,6 +6,7 @@ import { GameTimer, type TimeProvider, SystemTimeProvider } from "./game-timer.j
 import { BaseHealth } from "./base-health.js";
 import { GameScore } from "./game-score.js";
 import { ManaPool } from "./mana-pool.js";
+import { ManaTransaction } from "../value-objects/mana-transaction.js";
 import { GameState } from "../value-objects/game-state.js";
 import { GameEndReason } from "../value-objects/game-end-reason.js";
 import type { EnemyType } from "../value-objects/enemy-type.js";
@@ -62,6 +63,11 @@ export class GameSession {
   private readonly _towers: Tower[] = [];
   private readonly _towerPlacementService: TowerPlacementService;
 
+  // マナ回復システム
+  private _lastManaRegenTime = 0;
+  private readonly _manaRegenInterval = 1000; // 1秒 = 1000ms
+  private readonly _manaRegenAmount = 1; // 1秒毎に1マナ回復
+
   constructor(
     id: string, 
     cardPool: CardPool, 
@@ -83,7 +89,7 @@ export class GameSession {
     this._timer = new GameTimer(gameDuration, timeProvider);
     this._baseHealth = new BaseHealth(maxHealth);
     this._score = new GameScore();
-    this._manaPool = new ManaPool(id, 10, 10); // 初期マナ10、最大マナ10
+    this._manaPool = new ManaPool(id, 10, 100); // 初期マナ10、最大マナ100
     this._state = GameState.notStarted();
 
     // 敵生成システムの初期化
@@ -129,6 +135,9 @@ export class GameSession {
     this._state = GameState.running();
     this._startedAt = new Date();
     this._endedAt = null;
+
+    // マナ回復タイマーをリセット
+    this._lastManaRegenTime = 0;
 
     // 敵生成システムの開始
     this._waveScheduler.startWaveScheduling();
@@ -305,6 +314,8 @@ export class GameSession {
 
     this._timer.pause();
     this._state = GameState.paused();
+    // 一時停止時はマナ回復タイマーもリセット
+    this._lastManaRegenTime = 0;
   }
 
   /**
@@ -317,6 +328,8 @@ export class GameSession {
 
     this._timer.resume();
     this._state = GameState.running();
+    // 再開時はマナ回復タイマーをリセット
+    this._lastManaRegenTime = 0;
   }
 
   /**
@@ -434,6 +447,9 @@ export class GameSession {
     // タイマー更新
     this._timer.update(deltaTime);
 
+    // マナ回復処理
+    this._updateManaRegeneration(deltaTime);
+
     // 敵生成システム更新
     this._waveScheduler.update(new Date(), this._movementPath);
 
@@ -517,5 +533,33 @@ export class GameSession {
    */
   get towerPlacementService(): TowerPlacementService {
     return this._towerPlacementService;
+  }
+
+  /**
+   * マナ回復処理
+   */
+  private _updateManaRegeneration(deltaTime: number): void {
+    // ゲームが実行中でない場合は回復しない
+    if (!this._state.isRunning()) {
+      return;
+    }
+
+    this._lastManaRegenTime += deltaTime;
+
+    // 1秒経過毎にマナを回復
+    if (this._lastManaRegenTime >= this._manaRegenInterval) {
+      const regenCount = Math.floor(this._lastManaRegenTime / this._manaRegenInterval);
+      this._lastManaRegenTime = this._lastManaRegenTime % this._manaRegenInterval;
+
+      // マナが最大値未満の場合のみ回復
+      if (!this._manaPool.isAtMaxCapacity()) {
+        const manaTransaction = new ManaTransaction(
+          this._manaRegenAmount * regenCount,
+          "generation",
+          Date.now()
+        );
+        this._manaPool.generateMana(manaTransaction);
+      }
+    }
   }
 }
