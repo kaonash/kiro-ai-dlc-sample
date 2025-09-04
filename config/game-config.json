@@ -67,7 +67,7 @@
     "feedbackDuration": 2000,
     "layout": {
       "headerHeight": 80,
-      "handHeight": 120,
+      "handHeight": 130,
       "margin": 20,
       "padding": 10,
       "minWidth": 1024,
@@ -84,11 +84,13 @@
       }
     },
     "hand": {
-      "manaBarWidth": 150,
-      "manaBarMargin": 20,
-      "cardSpacing": 10,
-      "cardWidth": 110,
-      "cardHeight": 70
+      "manaBarWidth": 140,
+      "manaBarMargin": 15,
+      "cardSpacing": 8,
+      "cardWidth": 100,
+      "cardHeight": 70,
+      "minCardWidth": 80,
+      "maxCardsPerRow": 8
     }
   },
   "debug": {

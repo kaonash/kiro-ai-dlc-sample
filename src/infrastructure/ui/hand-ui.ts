@@ -82,7 +82,7 @@ export class HandUI {
    */
   updateHand(cards: Card[]): void {
     this._cards = [...cards];
-    
+
     // 選択中のカードが無効になった場合はクリア
     if (this._selectedCardIndex >= this._cards.length) {
       this._selectedCardIndex = -1;
@@ -153,28 +153,48 @@ export class HandUI {
     if (cardCount === 0) return [];
 
     const uiConfig = this.config.ui;
-    const cardWidth = uiConfig.hand.cardWidth;
+    const baseCardWidth = uiConfig.hand.cardWidth;
     const cardHeight = uiConfig.hand.cardHeight;
     const minSpacing = uiConfig.hand.cardSpacing;
     const margin = uiConfig.layout.margin;
 
     const availableWidth = this.bounds.width - (2 * margin);
-    const totalCardWidth = cardCount * cardWidth;
-    const totalSpacingWidth = (cardCount - 1) * minSpacing;
-    
-    // カードが収まらない場合は間隔を調整
-    const spacing = totalCardWidth + totalSpacingWidth <= availableWidth 
-      ? minSpacing 
-      : Math.max(5, (availableWidth - totalCardWidth) / (cardCount - 1));
+    const minCardWidth = 80; // 最小カード幅を保証
+    const maxCardWidth = baseCardWidth;
+
+    // 理想的な総幅を計算
+    const idealTotalWidth = cardCount * baseCardWidth + (cardCount - 1) * minSpacing;
+
+    let cardWidth = baseCardWidth;
+    let spacing = minSpacing;
+
+    // カードが収まらない場合の調整
+    if (idealTotalWidth > availableWidth) {
+      // まず間隔を縮める
+      const minSpacingReduced = Math.max(2, minSpacing / 2);
+      const totalWithReducedSpacing = cardCount * baseCardWidth + (cardCount - 1) * minSpacingReduced;
+
+      if (totalWithReducedSpacing <= availableWidth) {
+        spacing = minSpacingReduced;
+      } else {
+        // 間隔を最小にしてもダメな場合はカード幅を調整
+        spacing = 2;
+        const availableForCards = availableWidth - (cardCount - 1) * spacing;
+        cardWidth = Math.max(minCardWidth, availableForCards / cardCount);
+      }
+    }
+
+    // カードを中央揃えで配置
+    const totalUsedWidth = cardCount * cardWidth + (cardCount - 1) * spacing;
+    const startX = this.bounds.x + (this.bounds.width - totalUsedWidth) / 2;
 
     const bounds: Rectangle[] = [];
-    const startX = this.bounds.x + margin;
     let currentX = startX;
 
     for (let i = 0; i < cardCount; i++) {
       bounds.push(new Rectangle(
         currentX,
-        this.bounds.y + 35, // マナバー分のスペースを確保
+        this.bounds.y + 45, // マナバーとラベル分のスペースを確保
         cardWidth,
         cardHeight
       ));
@@ -196,7 +216,7 @@ export class HandUI {
    */
   getCardAtPosition(position: Position): Card | null {
     const cardBounds = this.getCardBounds();
-    
+
     for (let i = 0; i < cardBounds.length; i++) {
       if (cardBounds[i].contains(position)) {
         return this._cards[i];
@@ -230,21 +250,26 @@ export class HandUI {
     const manaBarWidth = uiConfig.hand.manaBarWidth;
     const manaBarMargin = uiConfig.hand.manaBarMargin;
     const manaBarHeight = 15;
-    
+
+    // マナバーの位置を調整（ラベル用のスペースを確保）
     const manaBarBounds = new Rectangle(
       this.bounds.x + manaBarMargin,
-      this.bounds.y + 10,
+      this.bounds.y + 25, // ラベル用のスペースを確保
       manaBarWidth,
       manaBarHeight
     );
 
-    // マナラベル
-    const labelPosition = new Position(manaBarBounds.x, manaBarBounds.y - 5);
+    // マナラベル（バーの上に配置）
+    const labelPosition = new Position(
+      manaBarBounds.x,
+      this.bounds.y + 15 // 手札エリア内に確実に配置
+    );
+
     const labelStyle: TextStyle = {
-      font: "14px Arial",
+      font: "12px Arial",
       color: Color.white(),
       align: "left",
-      baseline: "bottom",
+      baseline: "middle",
     };
 
     this.renderingService.renderText(context, "Mana", labelPosition, labelStyle);
@@ -260,7 +285,7 @@ export class HandUI {
       manaColor
     );
 
-    // マナ数値
+    // マナ数値（バーの右側に配置）
     const manaText = `${this._currentMana}/${this._maxMana}`;
     const manaTextPosition = new Position(
       manaBarBounds.x + manaBarBounds.width + 10,
@@ -268,7 +293,7 @@ export class HandUI {
     );
 
     const manaTextStyle: TextStyle = {
-      font: "12px Arial",
+      font: "11px Arial",
       color: Color.white(),
       align: "left",
       baseline: "middle",
@@ -304,11 +329,11 @@ export class HandUI {
     canAfford: boolean
   ): void {
     // カード背景
-    const backgroundColor = canAfford 
+    const backgroundColor = canAfford
       ? new Color(60, 80, 100, 1)
       : new Color(40, 40, 40, 0.7);
-    
-    const borderColor = isSelected 
+
+    const borderColor = isSelected
       ? new Color(255, 255, 100, 1)
       : new Color(100, 100, 100, 1);
 
@@ -322,29 +347,39 @@ export class HandUI {
       borderWidth
     );
 
-    // カード名
+    // カード幅に応じてフォントサイズを調整
+    const scaleFactor = Math.min(1, bounds.width / 100);
+    const nameFontSize = Math.max(10, 14 * scaleFactor);
+    const costFontSize = Math.max(9, 12 * scaleFactor);
+
+    // カード名（長い場合は省略）
+    const maxNameLength = Math.floor(bounds.width / 8);
+    const displayName = card.name.length > maxNameLength
+      ? card.name.substring(0, maxNameLength - 1) + '…'
+      : card.name;
+
     const namePosition = new Position(
       bounds.x + bounds.width / 2,
-      bounds.y + 20
+      bounds.y + bounds.height * 0.3
     );
 
     const nameStyle: TextStyle = {
-      font: "14px Arial",
+      font: `${nameFontSize}px Arial`,
       color: canAfford ? Color.white() : new Color(150, 150, 150),
       align: "center",
       baseline: "middle",
     };
 
-    this.renderingService.renderText(context, card.name, namePosition, nameStyle);
+    this.renderingService.renderText(context, displayName, namePosition, nameStyle);
 
     // コスト
     const costPosition = new Position(
       bounds.x + bounds.width / 2,
-      bounds.y + bounds.height - 15
+      bounds.y + bounds.height * 0.75
     );
 
     const costStyle: TextStyle = {
-      font: "12px Arial",
+      font: `${costFontSize}px Arial`,
       color: canAfford ? new Color(100, 150, 255) : new Color(100, 100, 100),
       align: "center",
       baseline: "middle",
@@ -362,7 +397,7 @@ export class HandUI {
     const uiConfig = this.config.ui;
     const cardWidth = uiConfig.hand.cardWidth;
     const cardHeight = uiConfig.hand.cardHeight;
-    
+
     const dragBounds = new Rectangle(
       this._dragPosition.x - cardWidth / 2,
       this._dragPosition.y - cardHeight / 2,
@@ -371,9 +406,9 @@ export class HandUI {
     );
 
     const canAfford = this.canAffordCard(this._draggedCard);
-    
+
     // 半透明で描画
-    const backgroundColor = canAfford 
+    const backgroundColor = canAfford
       ? new Color(60, 80, 100, 0.8)
       : new Color(40, 40, 40, 0.5);
 
