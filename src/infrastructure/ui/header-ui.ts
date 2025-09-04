@@ -2,6 +2,7 @@ import { Rectangle } from "../../domain/value-objects/rectangle";
 import { Position } from "../../domain/value-objects/position";
 import { Color } from "../../domain/value-objects/color";
 import { RenderingService, TextStyle } from "../../domain/services/rendering-service";
+import { GameConfig } from "../config/game-config";
 
 /**
  * ヘッダーレイアウト情報
@@ -20,6 +21,7 @@ export interface HeaderLayout {
 export class HeaderUI {
   public readonly bounds: Rectangle;
   private readonly renderingService: RenderingService;
+  private readonly config: GameConfig;
 
   private _timeRemaining = 0;
   private _score = 0;
@@ -29,6 +31,7 @@ export class HeaderUI {
   constructor(bounds: Rectangle, renderingService: RenderingService) {
     this.bounds = bounds;
     this.renderingService = renderingService;
+    this.config = GameConfig.getInstance();
   }
 
   /**
@@ -115,8 +118,14 @@ export class HeaderUI {
    * レイアウト情報を取得
    */
   getLayout(): HeaderLayout {
+    const uiConfig = this.config.ui;
+    const margin = uiConfig.layout.margin;
+    const timerMargin = uiConfig.header.timerMargin;
+    const healthBarMargin = uiConfig.header.healthBarMargin;
+    const healthBarWidth = uiConfig.header.healthBarWidth;
+
     const timerPosition = new Position(
-      this.bounds.x + 50,
+      this.bounds.x + timerMargin,
       this.bounds.y + this.bounds.height / 2
     );
 
@@ -125,10 +134,9 @@ export class HeaderUI {
       this.bounds.y + this.bounds.height / 2
     );
 
-    const healthBarWidth = 150;
     const healthBarHeight = 20;
     const healthBarBounds = new Rectangle(
-      this.bounds.x + this.bounds.width - 200,
+      this.bounds.x + this.bounds.width - healthBarWidth - healthBarMargin - 60, // 数値表示分のスペースを確保
       this.bounds.y + (this.bounds.height - healthBarHeight) / 2,
       healthBarWidth,
       healthBarHeight
@@ -169,9 +177,10 @@ export class HeaderUI {
   private renderTimer(context: CanvasRenderingContext2D, position: Position): void {
     const timeText = this.formatTime(this._timeRemaining);
     const isLowTime = this._timeRemaining <= 30;
+    const fontSize = this.config.ui.header.fontSize.timer;
     
     const textStyle: TextStyle = {
-      font: "24px Arial",
+      font: `${fontSize}px Arial`,
       color: isLowTime ? new Color(255, 100, 100) : Color.white(),
       align: "left",
       baseline: "middle",
@@ -185,9 +194,10 @@ export class HeaderUI {
    */
   private renderScore(context: CanvasRenderingContext2D, position: Position): void {
     const scoreText = `Score: ${this.formatScore(this._score)}`;
+    const fontSize = this.config.ui.header.fontSize.score;
     
     const textStyle: TextStyle = {
-      font: "20px Arial",
+      font: `${fontSize}px Arial`,
       color: Color.white(),
       align: "center",
       baseline: "middle",
@@ -205,8 +215,9 @@ export class HeaderUI {
     labelPosition: Position
   ): void {
     // ラベルを描画
+    const fontSize = this.config.ui.header.fontSize.health;
     const labelStyle: TextStyle = {
-      font: "14px Arial",
+      font: `${fontSize}px Arial`,
       color: Color.white(),
       align: "left",
       baseline: "bottom",

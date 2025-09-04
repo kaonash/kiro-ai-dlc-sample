@@ -151,6 +151,13 @@ export class UIManager {
   }
 
   /**
+   * 移動パス情報を更新
+   */
+  updateMovementPath(pathPoints: Position[]): void {
+    this.gameFieldUI.updateMovementPath(pathPoints);
+  }
+
+  /**
    * 全UIコンポーネントを描画
    */
   render(context: CanvasRenderingContext2D, deltaTime: number): void {

@@ -342,31 +342,10 @@ export class GameRenderer {
     this.context.stroke();
     this.context.restore();
 
-    // スタート地点とゴール地点を描画
-    this.renderPathPoint(pathPoints[0], '#4CAF50', 'START');
-    this.renderPathPoint(pathPoints[pathPoints.length - 1], '#F44336', 'GOAL');
+    // START/GOAL表示はGameFieldUIで行うため、ここでは描画しない
   }
 
-  /**
-   * パス地点を描画
-   */
-  private renderPathPoint(position: Position, color: string, label: string): void {
-    this.context.save();
-    
-    // 円を描画
-    this.context.fillStyle = color;
-    this.context.beginPath();
-    this.context.arc(position.x, position.y, 8, 0, Math.PI * 2);
-    this.context.fill();
 
-    // ラベルを描画
-    this.context.fillStyle = '#FFFFFF';
-    this.context.font = '10px Arial';
-    this.context.textAlign = 'center';
-    this.context.fillText(label, position.x, position.y - 15);
-    
-    this.context.restore();
-  }
 
   /**
    * 敵タイプに応じたサイズを取得

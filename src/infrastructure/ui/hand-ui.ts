@@ -3,6 +3,7 @@ import { Position } from "../../domain/value-objects/position";
 import { Color } from "../../domain/value-objects/color";
 import { RenderingService, TextStyle } from "../../domain/services/rendering-service";
 import { Card } from "../../domain/entities/ui-manager";
+import { GameConfig } from "../config/game-config";
 
 /**
  * 手札UI実装
@@ -11,6 +12,7 @@ import { Card } from "../../domain/entities/ui-manager";
 export class HandUI {
   public readonly bounds: Rectangle;
   private readonly renderingService: RenderingService;
+  private readonly config: GameConfig;
 
   private _cards: Card[] = [];
   private _currentMana = 0;
@@ -23,6 +25,7 @@ export class HandUI {
   constructor(bounds: Rectangle, renderingService: RenderingService) {
     this.bounds = bounds;
     this.renderingService = renderingService;
+    this.config = GameConfig.getInstance();
   }
 
   /**
@@ -149,18 +152,29 @@ export class HandUI {
     const cardCount = this._cards.length;
     if (cardCount === 0) return [];
 
-    const cardWidth = 120;
-    const cardHeight = 70;
+    const uiConfig = this.config.ui;
+    const cardWidth = uiConfig.hand.cardWidth;
+    const cardHeight = uiConfig.hand.cardHeight;
+    const minSpacing = uiConfig.hand.cardSpacing;
+    const margin = uiConfig.layout.margin;
+
+    const availableWidth = this.bounds.width - (2 * margin);
     const totalCardWidth = cardCount * cardWidth;
-    const spacing = Math.max(10, (this.bounds.width - totalCardWidth) / (cardCount + 1));
+    const totalSpacingWidth = (cardCount - 1) * minSpacing;
+    
+    // カードが収まらない場合は間隔を調整
+    const spacing = totalCardWidth + totalSpacingWidth <= availableWidth 
+      ? minSpacing 
+      : Math.max(5, (availableWidth - totalCardWidth) / (cardCount - 1));
 
     const bounds: Rectangle[] = [];
-    let currentX = this.bounds.x + spacing;
+    const startX = this.bounds.x + margin;
+    let currentX = startX;
 
     for (let i = 0; i < cardCount; i++) {
       bounds.push(new Rectangle(
         currentX,
-        this.bounds.y + 25,
+        this.bounds.y + 35, // マナバー分のスペースを確保
         cardWidth,
         cardHeight
       ));
@@ -212,10 +226,13 @@ export class HandUI {
    * マナバーを描画
    */
   private renderManaBar(context: CanvasRenderingContext2D): void {
-    const manaBarWidth = 200;
+    const uiConfig = this.config.ui;
+    const manaBarWidth = uiConfig.hand.manaBarWidth;
+    const manaBarMargin = uiConfig.hand.manaBarMargin;
     const manaBarHeight = 15;
+    
     const manaBarBounds = new Rectangle(
-      this.bounds.x + 20,
+      this.bounds.x + manaBarMargin,
       this.bounds.y + 10,
       manaBarWidth,
       manaBarHeight
@@ -342,8 +359,10 @@ export class HandUI {
   private renderDraggedCard(context: CanvasRenderingContext2D): void {
     if (!this._draggedCard) return;
 
-    const cardWidth = 120;
-    const cardHeight = 70;
+    const uiConfig = this.config.ui;
+    const cardWidth = uiConfig.hand.cardWidth;
+    const cardHeight = uiConfig.hand.cardHeight;
+    
     const dragBounds = new Rectangle(
       this._dragPosition.x - cardWidth / 2,
       this._dragPosition.y - cardHeight / 2,

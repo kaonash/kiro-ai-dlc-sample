@@ -20,6 +20,7 @@ import { HeaderUI } from "../infrastructure/ui/header-ui";
 import { HandUI } from "../infrastructure/ui/hand-ui";
 import { GameFieldUI } from "../infrastructure/ui/game-field-ui";
 import { TooltipUI } from "../infrastructure/ui/tooltip-ui";
+import { GameConfig } from "../infrastructure/config/game-config";
 
 /**
  * タワーディフェンスゲームのメインアプリケーション
@@ -28,6 +29,9 @@ import { TooltipUI } from "../infrastructure/ui/tooltip-ui";
 export class TowerDefenseGame {
   private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
+  
+  // 設定
+  private config: GameConfig;
   
   // コアシステム
   private gameRenderer: GameRenderer;
@@ -54,6 +58,9 @@ export class TowerDefenseGame {
   private animationFrameId: number | null = null;
 
   constructor(canvasId: string) {
+    // 設定初期化
+    this.config = GameConfig.getInstance();
+    
     // Canvas初期化
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     if (!this.canvas) {
@@ -145,6 +152,9 @@ export class TowerDefenseGame {
           currentMana: this.gameSession.manaPool.getCurrentMana(),
           maxMana: this.gameSession.manaPool.getMaxMana(),
         });
+
+        // 移動パス情報を更新
+        this.uiManager.updateMovementPath(this.gameSession.movementPath.pathPoints);
 
         // ゲームループ開始
         this.start();
@@ -250,8 +260,10 @@ export class TowerDefenseGame {
     // エフェクト描画
     this.effectManager.render(this.context, deltaTime);
 
-    // FPS表示（デバッグ用）
-    this.renderDebugInfo(deltaTime);
+    // デバッグ情報表示（設定で有効な場合のみ）
+    if (this.config.debug.enabled) {
+      this.renderDebugInfo(deltaTime);
+    }
   }
 
   /**

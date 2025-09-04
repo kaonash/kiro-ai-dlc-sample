@@ -64,7 +64,32 @@
   "ui": {
     "animationDuration": 300,
     "cardDisplayDelay": 100,
-    "feedbackDuration": 2000
+    "feedbackDuration": 2000,
+    "layout": {
+      "headerHeight": 80,
+      "handHeight": 120,
+      "margin": 20,
+      "padding": 10,
+      "minWidth": 1024,
+      "minHeight": 768
+    },
+    "header": {
+      "timerMargin": 30,
+      "healthBarWidth": 120,
+      "healthBarMargin": 30,
+      "fontSize": {
+        "timer": 24,
+        "score": 20,
+        "health": 14
+      }
+    },
+    "hand": {
+      "manaBarWidth": 150,
+      "manaBarMargin": 20,
+      "cardSpacing": 10,
+      "cardWidth": 110,
+      "cardHeight": 70
+    }
   },
   "debug": {
     "enabled": false,

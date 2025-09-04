@@ -3,6 +3,7 @@ import { Position } from "../../domain/value-objects/position";
 import { Color } from "../../domain/value-objects/color";
 import { RenderingService, TextStyle } from "../../domain/services/rendering-service";
 import { Enemy, Tower } from "../../domain/entities/ui-manager";
+import { GameConfig } from "../config/game-config";
 
 /**
  * 戦場UI実装
@@ -11,11 +12,13 @@ import { Enemy, Tower } from "../../domain/entities/ui-manager";
 export class GameFieldUI {
   public readonly bounds: Rectangle;
   private readonly renderingService: RenderingService;
+  private readonly config: GameConfig;
 
   private _enemies: Enemy[] = [];
   private _towers: Tower[] = [];
   private _selectedTower: Tower | null = null;
   private _showRange = false;
+  private _movementPath: Position[] = [];
 
   // タワーサイズとレンジの定義
   private readonly towerSize = 24;
@@ -31,6 +34,7 @@ export class GameFieldUI {
   constructor(bounds: Rectangle, renderingService: RenderingService) {
     this.bounds = bounds;
     this.renderingService = renderingService;
+    this.config = GameConfig.getInstance();
   }
 
   /**
@@ -73,6 +77,13 @@ export class GameFieldUI {
    */
   updateTowers(towers: Tower[]): void {
     this._towers = [...towers];
+  }
+
+  /**
+   * 移動パス情報を更新
+   */
+  updateMovementPath(pathPoints: Position[]): void {
+    this._movementPath = [...pathPoints];
   }
 
   /**
@@ -188,22 +199,68 @@ export class GameFieldUI {
    * パスを描画（簡易版）
    */
   private renderPath(context: CanvasRenderingContext2D): void {
-    const pathColor = new Color(139, 69, 19, 1); // 茶色のパス
-    const pathWidth = 40;
+    const margin = this.config.ui.layout.margin;
 
-    // 簡易的な直線パス
-    const startX = this.bounds.x;
-    const endX = this.bounds.x + this.bounds.width;
-    const centerY = this.bounds.y + this.bounds.height / 2;
+    // 実際の移動パスがある場合はそれを使用、なければデフォルト位置
+    if (this._movementPath.length >= 2) {
+      const actualStartPos = this._movementPath[0];
+      const actualEndPos = this._movementPath[this._movementPath.length - 1];
+      this.renderPathLabels(context, actualStartPos.x, actualEndPos.x, actualStartPos.y, actualEndPos.y);
+    } else {
+      // フォールバック：デフォルト位置（茶色の直線は描画しない）
+      const startX = this.bounds.x + margin;
+      const endX = this.bounds.x + this.bounds.width - margin;
+      const centerY = this.bounds.y + this.bounds.height / 2;
+      this.renderPathLabels(context, startX, endX, centerY, centerY);
+    }
+  }
 
-    const pathBounds = new Rectangle(
-      startX,
-      centerY - pathWidth / 2,
-      this.bounds.width,
-      pathWidth
+  /**
+   * START/GOALラベルを描画
+   */
+  private renderPathLabels(context: CanvasRenderingContext2D, startX: number, endX: number, startY: number, endY: number): void {
+    const labelStyle: TextStyle = {
+      font: "14px Arial",
+      color: Color.white(),
+      align: "center",
+      baseline: "middle",
+    };
+
+    const margin = this.config.ui.layout.margin;
+    const labelOffset = 30; // ラベルをマーカーから離す距離
+
+    // STARTラベル（画面内に収まるように調整）
+    const startLabelX = Math.max(margin + 25, startX); // 左端から最低25px離す
+    const startPosition = new Position(startLabelX, startY - labelOffset);
+    this.renderingService.renderText(context, "START", startPosition, labelStyle);
+
+    // GOALラベル（画面内に収まるように調整）
+    const goalLabelX = Math.min(this.bounds.x + this.bounds.width - margin - 25, endX); // 右端から最低25px離す
+    const goalPosition = new Position(goalLabelX, endY - labelOffset);
+    this.renderingService.renderText(context, "GOAL", goalPosition, labelStyle);
+
+    // START/GOALマーカー（実際のパス位置に配置）
+    const markerColor = new Color(255, 255, 100, 1);
+    
+    // STARTマーカー（緑の円）
+    this.renderingService.renderCircle(
+      context,
+      new Position(startX, startY),
+      8,
+      new Color(100, 255, 100, 1),
+      markerColor,
+      2
     );
 
-    this.renderingService.renderRectangle(context, pathBounds, pathColor);
+    // GOALマーカー（赤の円）
+    this.renderingService.renderCircle(
+      context,
+      new Position(endX, endY),
+      8,
+      new Color(255, 100, 100, 1),
+      markerColor,
+      2
+    );
   }
 
   /**
@@ -339,12 +396,73 @@ export class GameFieldUI {
   }
 
   /**
-   * 位置がパス上かチェック（簡易版）
+   * 位置がパス上かチェック（実際の移動パスを基準）
    */
   private isOnPath(position: Position): boolean {
-    const centerY = this.bounds.y + this.bounds.height / 2;
-    const pathWidth = 40;
+    if (this._movementPath.length < 2) {
+      // 移動パスが設定されていない場合はフォールバック
+      const centerY = this.bounds.y + this.bounds.height / 2;
+      const pathWidth = 40;
+      const margin = this.config.ui.layout.margin;
+      
+      const isInPathY = Math.abs(position.y - centerY) < pathWidth / 2;
+      const isInPathX = position.x >= this.bounds.x + margin && 
+                        position.x <= this.bounds.x + this.bounds.width - margin;
+      
+      return isInPathY && isInPathX;
+    }
+
+    // 実際の移動パスに沿ってチェック
+    const pathWidth = 30; // パス幅
     
-    return Math.abs(position.y - centerY) < pathWidth / 2;
+    for (let i = 0; i < this._movementPath.length - 1; i++) {
+      const start = this._movementPath[i];
+      const end = this._movementPath[i + 1];
+      
+      // 線分との距離を計算
+      const distance = this.distanceToLineSegment(position, start, end);
+      if (distance < pathWidth / 2) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * 点から線分までの距離を計算
+   */
+  private distanceToLineSegment(point: Position, lineStart: Position, lineEnd: Position): number {
+    const A = point.x - lineStart.x;
+    const B = point.y - lineStart.y;
+    const C = lineEnd.x - lineStart.x;
+    const D = lineEnd.y - lineStart.y;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    
+    if (lenSq === 0) {
+      // 線分が点の場合
+      return Math.sqrt(A * A + B * B);
+    }
+    
+    let param = dot / lenSq;
+    
+    let xx: number, yy: number;
+    
+    if (param < 0) {
+      xx = lineStart.x;
+      yy = lineStart.y;
+    } else if (param > 1) {
+      xx = lineEnd.x;
+      yy = lineEnd.y;
+    } else {
+      xx = lineStart.x + param * C;
+      yy = lineStart.y + param * D;
+    }
+    
+    const dx = point.x - xx;
+    const dy = point.y - yy;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 }
